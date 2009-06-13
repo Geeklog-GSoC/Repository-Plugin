@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<repository
+xmlns="http://www.geeklog.com"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.geeklog.com repository_listing.xsd">
+
+<!-- Start Plugin List -->
+    <plugin>
+        <id>1</id>
+	<name>Random Plugin</name>
+	<version>1.0.11</version>
+	<db>1</db>
+	<dependencies>MyPlugin</dependencies>
+	<soft_dep></soft_dep>
+	<short_des>Nothing much to say</short_des>
+	<long_des>Else here</long_des>
+	<credits>Tim Patrick</credits>
+	<vett>100</vett>
+	<downloads>10014014</downloads>
+	<install>1</install>
+	<state>Stable</state>
+	<ext>.zip</ext>
+    </plugin>
+
+
+<!-- End Plugin List -->
+
+</repository>

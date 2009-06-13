@@ -1,0 +1,16 @@
+
+                                <!-- Begin List Moderate Plugins -->
+				    <br />
+				    {lang_95}<br />
+<div id="rmanager_div_listofplugins">
+<table>
+<tr>
+<td class='name'>{lang_99}</td><td class='type'>{lang_100}</td><td class='opt'>{lang_96}</td><td class='opt'>{lang_97}</td><td class='opt'>{lang_98}</td><td class='opt'>{lang_131}</td>
+</tr>
+{value_1}
+</table>
+</div>				    
+                                    
+
+
+                                 <!-- End List Moderate Plugins -->

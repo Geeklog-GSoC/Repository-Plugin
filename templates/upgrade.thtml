@@ -1,0 +1,17 @@
+
+                                <!-- Begin Upgrade Announcement  -->
+                                    <br />
+                                    {lang_69}
+                                
+                                <form name="UPLOAD_PLUGIN_FORM" id="UPLOAD_PLUGIN_FORM" method="post" action="pupload.php?ret=1&id={value_0}" enctype="multipart/form-data">
+                                    <div class="smalltxt">{lang_1}</div>
+                                    <div class="smalltxt" id="GEEKLOG_PUPLOAD_ERRFORM" style="color:red"></div>
+ 
+                                    <div class="smalltxt">{lang_70}</div>
+                                    <input maxlength="100" type="text" name="GEEKLOG_PLVERSION" id="GEEKLOG_PLVERSION" value="" />
+ 
+                                    <div class="smalltxt"></div>
+                                    <input type="submit" name="submit_upload_upgrade" value="{lang_71}" /><input type="reset" name="reset_upload_plugin" value="{lang_17}" />
+
+                                 </form>
+<!-- End  Upgrade Announcement  Center -->

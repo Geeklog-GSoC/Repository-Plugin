@@ -1,0 +1,29 @@
+
+                                <!-- Begin Search  -->
+                                    <br />
+                                    {lang_124}
+                                
+                                <form name="UPLOAD_PLUGIN_FORM" id="UPLOAD_PLUGIN_FORM" method="post" action="index.php?cmd={value_0}" enctype="multipart/form-data">
+                                    <div class="smalltxt">{lang_1}</div>
+                                    <div class="smalltxt" id="GEEKLOG_PUPLOAD_ERRFORM" style="color:red"></div>
+ 
+                                    <div class="smalltxt">{lang_125}</div>
+                                    <input maxlength="100" type="text" name="GEEKLOG_SEARCH" id="GEEKLOG_SEARCH" value="" />
+				    
+                                    <div class="smalltxt">{lang_129}</div>
+                                    <input maxlength="100" type="text" name="GEEKLOG_VERSION" id="GEEKLOG_VERSION" value="" />
+				    
+				    <div class="smalltxt">{lang_126}</div>
+				    <select name="GEEKLOG_LIMIT">
+				        <option value="10" selected="selected">10</option>
+					<option value="20">20</option>
+					<option value="50">50</option>
+					<option value="100">100</option>
+				        <option value="200">200</option>
+				    </select>
+
+                                    <div class="smalltxt"></div>
+                                    <input type="submit" name="submit_upload_search" value="{lang_127}" /><input type="reset" name="reset_upload_plugin" value="{lang_17}" />
+
+                                 </form>
+<!-- End  Search -->

@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+targetNamespace="http://www.geeklog.com"
+xmlns="http://www.geeklog.com"
+elementFormDefault="qualified">
+
+
+<xs:element name="repository">
+  <xs:complexType>
+    <xs:sequence>
+    
+<xs:element name="patch">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="id" type="xs:integer"/>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="plugin_id" type="xs:integer"/>
+      <xs:element name="applies_num" type="xs:string"/>
+      <xs:element name="version" type="xs:string"/>
+      <xs:element name="severity" type="xs:string"/>
+      <xs:element name="automatic_install" type="xs:integer"/>
+      <xs:element name="ext" type="xs:string"/>
+      <xs:element name="description" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+</xs:schema>

@@ -1,0 +1,11 @@
+
+                                <!-- Begin Plugin Upload Center -->
+				<br />
+				{lang_91}<br /><br />
+				<a href="pupload.php?cmd=1"{lang_92}</a>
+				<br /><br />
+				<a href="pupload.php?cmd=2">{lang_93}</a>
+				<br /><br />    
+				
+
+                                <!-- End Plugin Upload Center -->

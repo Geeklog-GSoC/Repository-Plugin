@@ -1,0 +1,13 @@
+
+                                <!-- Begin Plugin Upload Center -->
+				<br />
+				{lang_94}<br /><br />
+				{value_0}
+				<br /><br /><a href="index.php?cmd=3">{lang_115}</a>
+				<br /><br />
+				<a href="index.php?cmd=4">{lang_116}</a>
+				<br /><br />  
+				<a href="index.php?cmd=7">{lang_128}</a>
+				<br /><br />  
+				
+                                <!-- End Plugin Upload Center -->

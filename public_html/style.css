@@ -1,0 +1,47 @@
+/* This is the style for the plugin upload */
+
+div.smalltxt {
+    font-size:11px;
+    font-weight:normal;
+    margin-top:16px;
+    margin-left:3px;
+}
+
+input, textarea
+{
+    margin:3px 0;
+}
+
+
+div#rmanager_div_listofplugins table
+{
+    margin:0;
+    padding:0;
+    display:block;
+    width:900px;
+    margin-top:15px;
+}
+
+div#rmanager_div_listofplugins table td
+{
+    margin:5px;
+    display:block;
+    float:left;
+}
+
+div#rmanager_div_listofplugins table td.name
+{
+    width:300px;
+}
+
+div#rmanager_div_listofplugins table td.type
+{
+    width:100px;
+}
+
+div#rmanager_div_listofplugins table td.opt
+{
+    min-width:50px;
+    width:auto;
+}
+

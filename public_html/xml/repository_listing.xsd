@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+targetNamespace="http://www.geeklog.com"
+xmlns="http://www.geeklog.com"
+elementFormDefault="qualified">
+
+
+<xs:element name="repository">
+  <xs:complexType>
+    <xs:sequence>
+    
+<xs:element name="plugin">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="id" type="xs:integer"/>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="version" type="xs:string"/>
+      <xs:element name="db" type="xs:integer"/>
+      <xs:element name="dependencies" type="xs:string"/>
+      <xs:element name="soft_dep" type="xs:string"/>
+      <xs:element name="short_des" type="xs:string"/>
+      <xs:element name="long_des" type="xs:string"/>
+      <xs:element name="credits" type="xs:string"/>
+      <xs:element name="vett" type="xs:integer"/>
+      <xs:element name="downloads" type="xs:integer"/>
+      <xs:element name="install" type="xs:integer"/>
+      <xs:element name="state" type="xs:string"/>
+      <xs:element name="ext" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+</xs:schema>
+

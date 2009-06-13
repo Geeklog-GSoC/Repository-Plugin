@@ -1,0 +1,41 @@
+
+                                <!-- Begin Patch Upload Center -->
+				    <br />
+				    {lang_45}
+				
+				<form name="UPLOAD_PLUGIN_FORM" id="UPLOAD_PLUGIN_FORM" method="post" action="pupload.php?ret=1&id={value_0}" enctype="multipart/form-data">
+				    <div class="smalltxt">{lang_1}</div>
+				    <div class="smalltxt" id="GEEKLOG_PUPLOAD_ERRFORM" style="color:red"></div>
+				    <div class="smalltxt">{lang_46}</div>
+				    <input type="file" name="GEEKLOG_FILE_PUPLOAD" id="GEEKLOG_FILE_PUPLOAD" value="" />
+
+                                    <div class="smalltxt">{lang_47}</div>
+				    <input maxlength="100" type="text" name="GEEKLOG_PLNAME" id="GEEKLOG_PLNAME" value="" />
+				    
+				    <div class="smalltxt">{lang_48}</div>
+				    <select name="GEEKLOG_PGT" id="GEEKLOG_PGT">
+				        <option value="al" selected="selected">{lang_49}</option>
+				        <option value="lt">{lang_50}</option>
+					<option value="le">{lang_51}</option>
+				        <option value="eq">{lang_52}</option>
+					<option value="ge">{lang_53}</option>
+				        <option value="gt">{lang_54}</option>
+				    </select>
+				    
+				    <div class="smalltxt">{lang_61}</div>
+				    <select name="GEEKLOG_SEV" id="GEEKLOG_SEV">
+				        <option value="low" selected="selected">{lang_62}</option>
+				        <option value="high">{lang_63}</option>
+				    </select>
+				    			    
+				    <div class="smalltxt">{lang_55}</div>
+				    <input type="text" name="GEEKLOG_PLVERSION" id="GEEKLOG_PLVERSION" value="" />
+
+				    <div class="smalltxt">{lang_90}</div>
+				    <textarea name="GEEKLOG_DES" id="GEEKLOG_DES"></textarea>
+
+				    <div class="smalltxt"></div>
+				    <input type="submit" name="submit_upload_patch" value="{lang_56}" /><input type="reset" name="reset_upload_plugin" value="{lang_17}" />
+
+				 </form>
+<!-- End Patch Upload Center -->
