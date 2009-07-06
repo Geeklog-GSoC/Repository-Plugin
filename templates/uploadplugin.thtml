@@ -44,9 +44,6 @@
 				    <div class="smalltxt">{lang_13}</div>
 				    <textarea name="GEEKLOG_SHRTDES" id="GEEKLOG_SHRTDES"></textarea>
 
-				    <div class="smalltxt">{lang_14}</div>
-				    <textarea name="GEEKLOG_LONGDES"></textarea>
-				    
 				    <div class="smalltxt">{lang_15}</div>
 				    <textarea name="GEEKLOG_CREDITS"></textarea>	
 				  

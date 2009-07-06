@@ -97,7 +97,6 @@ if (isset($_GET['cmd'])) {
 	$data->set_var('lang_11', $LANG_RMANAGER_UPLUGIN[11]);
 	$data->set_var('lang_12', $LANG_RMANAGER_UPLUGIN[12]);
 	$data->set_var('lang_13', $LANG_RMANAGER_UPLUGIN[13]);
-	$data->set_var('lang_14', $LANG_RMANAGER_UPLUGIN[14]);
 	$data->set_var('lang_15', $LANG_RMANAGER_UPLUGIN[15]);
 	$data->set_var('lang_16', $LANG_RMANAGER_UPLUGIN[16]);
 	$data->set_var('lang_17', $LANG_RMANAGER_UPLUGIN[17]);
@@ -297,7 +296,6 @@ if (isset($_GET['cmd'])) {
         $data->set_var('lang_11', $LANG_RMANAGER_UPLUGIN[11]);
         $data->set_var('lang_12', $LANG_RMANAGER_UPLUGIN[12]);
         $data->set_var('lang_13', $LANG_RMANAGER_UPLUGIN[13]);
-        $data->set_var('lang_14', $LANG_RMANAGER_UPLUGIN[14]);
         $data->set_var('lang_15', $LANG_RMANAGER_UPLUGIN[15]);
         $data->set_var('lang_16', $LANG_RMANAGER_UPLUGIN[16]);
         $data->set_var('lang_17', $LANG_RMANAGER_UPLUGIN[17]);
@@ -347,8 +345,7 @@ if (isset($_GET['cmd'])) {
 
 	$data->set_var('value_5', $row['dependencies']);        
         $data->set_var('value_6', $row['soft_dep']);        
-        $data->set_var('value_7', $row['short_des']);        
-        $data->set_var('value_8', $row['long_des']);        
+        $data->set_var('value_7', $row['short_des']);             
         $data->set_var('value_9', $row['credits']);        
         $data->set_var('value_10', $row['state']);        
         $data->parse('output','index');
@@ -423,7 +420,6 @@ else if (isset($_GET['ret'])) {
             $dependencies = (isset($_POST['GEEKLOG_PLDEPENDENCIES'])) ? $_POST['GEEKLOG_PLDEPENDENCIES'] : "";
             $sys_dependencies = (isset($_POST['GEEKLOG_PLSOFTDEP'])) ? $_POST['GEEKLOG_PLSOFTDEP'] : "";
             $shrt_des = (isset($_POST['GEEKLOG_SHRTDES'])) ? $_POST['GEEKLOG_SHRTDES'] : "";
-            $long_des = (isset($_POST['GEEKLOG_LONGDES'])) ? $_POST['GEEKLOG_LONGDES'] : "";
             $credits = (isset($_POST['GEEKLOG_CREDITS'])) ? $_POST['GEEKLOG_CREDITS'] : "";
             $update = (isset($_POST['GEEKLOG_UPDATE'])) ? $_POST['GEEKLOG_UPDATE'] : "0";
             $state = (isset($_POST['GEEKLOG_STATE'])) ? $_POST['GEEKLOG_STATE'] : "stable";
@@ -630,7 +626,6 @@ else if (isset($_GET['ret'])) {
            $dependencies = COM_applyFilter($dependencies);
            $sys_dependencies = COM_applyFilter($sys_dependencies);
            $shrt_des = COM_applyFilter($shrt_des);
-           $long_des = COM_applyFilter($long_des);
            $credits = COM_applyFilter($credits);
            $state = COM_applyFilter($state);
 	  
@@ -638,8 +633,8 @@ else if (isset($_GET['ret'])) {
            $tblname = $_DB_table_prefix.'repository_listing';
 	   // This type of string format needs to be against the 'wall' and not indented for it to work -- 
 $qstr = <<<HETERO
-INSERT INTO {$tblname}(ext, name, version, db, dependencies, soft_dep, short_des, long_des, credits, uploading_author, install, state, moderation) 
-VALUES('{$full_ext}', '{$name}','{$version}','{$database_bit_value}','{$dependencies}','{$sys_dependencies}','{$shrt_des}','{$long_des}','{$credits}','{$_USER['uid']}','{$automatic_installer}','{$state}', '{$plugin_moderated}');
+INSERT INTO {$tblname}(ext, name, version, db, dependencies, soft_dep, short_des, credits, uploading_author, install, state, moderation) 
+VALUES('{$full_ext}', '{$name}','{$version}','{$database_bit_value}','{$dependencies}','{$sys_dependencies}','{$shrt_des}','{$credits}','{$_USER['uid']}','{$automatic_installer}','{$state}', '{$plugin_moderated}');
 HETERO;
 
            $result = DB_query($qstr);
@@ -697,7 +692,6 @@ HETERO;
             $dependencies = (isset($_POST['GEEKLOG_PLDEPENDENCIES'])) ? $_POST['GEEKLOG_PLDEPENDENCIES'] : "";
             $sys_dependencies = (isset($_POST['GEEKLOG_PLSOFTDEP'])) ? $_POST['GEEKLOG_PLSOFTDEP'] : "";
             $shrt_des = (isset($_POST['GEEKLOG_SHRTDES'])) ? $_POST['GEEKLOG_SHRTDES'] : "";
-            $long_des = (isset($_POST['GEEKLOG_LONGDES'])) ? $_POST['GEEKLOG_LONGDES'] : "";
             $credits = (isset($_POST['GEEKLOG_CREDITS'])) ? $_POST['GEEKLOG_CREDITS'] : "";
             $update = (isset($_POST['GEEKLOG_UPDATE'])) ? $_POST['GEEKLOG_UPDATE'] : "0";
             $state = (isset($_POST['GEEKLOG_STATE'])) ? $_POST['GEEKLOG_STATE'] : "stable";
@@ -891,7 +885,6 @@ HETERO;
             $dependencies = COM_applyFilter($dependencies);
             $sys_dependencies = COM_applyFilter($sys_dependencies);
             $shrt_des = COM_applyFilter($shrt_des);
-            $long_des = COM_applyFilter($long_des);
             $credits = COM_applyFilter($credits);
             $state = COM_applyFilter($state);
 	    $id = (int)((isset($_GET['pid'])) ? $_GET['pid'] : 0);
@@ -919,7 +912,7 @@ HETERO;
            	  
 	    // This type of string format needs to be against the 'wall' and not indented for it to work -- 
 $qstr = <<<HETERO
-UPDATE {$tblname} SET ext = '{$full_ext}', name = '{$name}', version = '{$version}', db = '{$database_bit_value}', dependencies = '{$dependencies}', soft_dep = '{$sys_dependencies}', short_des = '{$shrt_des}', long_des = '{$long_des}', credits = '{$credits}', install = '{$automatic_installer}', state = '{$state}', moderation = '{$plugin_moderated}' WHERE id = '{$id}';
+UPDATE {$tblname} SET ext = '{$full_ext}', name = '{$name}', version = '{$version}', db = '{$database_bit_value}', dependencies = '{$dependencies}', soft_dep = '{$sys_dependencies}', short_des = '{$shrt_des}', credits = '{$credits}', install = '{$automatic_installer}', state = '{$state}', moderation = '{$plugin_moderated}' WHERE id = '{$id}';
 HETERO;
 
             // Run Query
