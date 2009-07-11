@@ -32,12 +32,12 @@ $_SQL[] = "
 CREATE TABLE {$tblname} (
    id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
    name VARCHAR(255) DEFAULT '',
+   fname VARCHAR(255) DEFAULT '',
    version VARCHAR(255) DEFAULT NULL,
    db TINYINT NOT NULL, 
    dependencies TEXT DEFAULT NULL,
    soft_dep TEXT DEFAULT NULL,
-   short_des VARCHAR(255) DEFAULT NULL,
-   long_des TEXT DEFAULT NULL,
+   short_des TEXT DEFAULT NULL,
    credits TEXT DEFAULT NULL,
    uploading_author INT NOT NULL,
    vett INT DEFAULT 0  DEFAULT 0,
@@ -75,7 +75,8 @@ CREATE TABLE {$tblname}
     severity VARCHAR(255),
     automatic_install TINYINT,
     description TEXT,
-    moderation TINYINT
+    moderation TINYINT,
+    update_number INT 
 ) TYPE=MyISAM;
 ";
 

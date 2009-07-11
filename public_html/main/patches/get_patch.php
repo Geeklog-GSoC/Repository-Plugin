@@ -2,9 +2,9 @@
 
 /* Reminder: always indent with 4 spaces (no tabs). */
 // +---------------------------------------------------------------------------+
-// | Repository Management                                                     |
+// | Redirect to the patch  based on ID passed                                 |
 // +---------------------------------------------------------------------------+
-// | autoinstall.php                                                           |
+// | get.php                                                                   |
 // |                                                                           |
 // | Geeklog Repository Manager                                                |
 // +---------------------------------------------------------------------------+
@@ -29,68 +29,30 @@
 // |                                                                           |
 // +---------------------------------------------------------------------------+
 
-function plugin_autoinstall_repository($pi_name) 
-{
-    $pi_name = 'repository';
-    $pi_display_name = 'Repository Manager';
-    $pi_admin = $pi_display_name.' Admin';
+require_once '../../../lib-common.php';
 
-    $info = array(
-        'pi_name'         => $pi_name,
-        'pi_display_name' => $pi_display_name,
-        'pi_version'      => '1.0.0',
-        'pi_gl_version'   => '1.6.0',
-        'pi_homepage'     => 'http://www.geeklog.net/'
-    );
+// Get the plugin ID
+$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
+
+// Select all the information from the database
+$result = DB_query("SELECT name, applies_num, version, ext FROM {$_TABLES['repository_patches']} WHERE id = {$id};");
     
-    $groups = array(
-        $pi_admin => 'Has full access to ' . $pi_display_name . ' features'
-    );
+// Loop until we receive false
+$result2 = DB_fetchArray($result);
 
-    $features = array(
-        $pi_name . '.manage'  => 'Ability to manage the repository',
-
-    );
-    
-    $mappings = array(
-        $pi_name . '.manage'  => array($pi_admin),
-
-    );
-
-    $tables = array(
-        'repository_listing',
-	'repository_patches',
-	'repository_maintainers',
-	'repository_upgrade'
-    );
-
-    $inst_parms = array(
-        'info'      => $info,
-        'groups'    => $groups,
-        'features'  => $features,
-        'mappings'  => $mappings,
-        'tables'    => $tables
-    );
-
-    return $inst_parms;
- 
-
-
+// Did it succeed
+if ($result2 === FALSE) {
+    // Cannot install, error message, exit
+    header("Location: ../no.php");
+    exit;
 }
 
+// Make up file path
+$get_path = $result2['name'] . '_' . $result2['version'] . '_' . $result2['applies_num'] . '_' . $id . $result2['ext'];
 
-function plugin_load_configuration_repository($pi_name)
-{
-    global $_CONF;
-
-    $base_path = $_CONF['path'] . 'plugins/' . $pi_name . '/';
-
-    require_once $_CONF['path_system'] . 'classes/config.class.php';
-    require_once $base_path . 'install_defaults.php';
-
-    return plugin_initconfig_repository();
+if (!file_exists($get_path)) {
+    header("Location: no.php");
+    exit;
 }
 
-
-
-?>
+header("Location: {$get_path}");   

@@ -31,6 +31,51 @@
 
 require_once '../lib-common.php';
 
+/**
+* Displays a message on the webpage according to the tmsg standard ($msg contains array key for $MESSAGE array, remaining GET parameters contain sprintf 
+* data
+* 
+* @param    int     $msg        ID of message to show
+* @return   string              HTML block with message
+*
+*/
+function ShowTMessageRManager($msg)
+{
+    global $LANG_RMANAGER_UPLUGIN;
+
+    $retval = '';
+
+    if ($msg > 0) {
+        $message = $LANG_RMANAGER_UPLUGIN[$msg];
+         
+        // Only if $_GET['enable_spf'] is enabled
+        if ( (isset($_GET['enable_spf'])) and ($_GET['enable_spf'] == 1)) {
+          
+            $eval = '$holder = sprintf($message';
+            foreach ($_GET as $name => $key) {
+                // If its msg as the name, we pass as thats ok. Otherwise, lets start racking up!
+                if ( ($name == "tmsg") or ($name == "enable_spf")) {
+                    continue;
+                }
+              
+                $eval .= ",COM_applyFilter(\$_GET['$name'])";
+            }
+            $eval .= ');';
+            
+            // Evaluate code
+            // Use of EVAL here is totally safe as we built the string
+            eval($eval);
+            $message = $holder;
+        }
+
+        if (!empty($message)) {
+            $retval .= COM_showMessageText($message);
+        }
+    }
+
+    return $retval;
+}
+
 $display = '';
 
 // Is anonymous user, which means they have not logged in, which means they cannot access the page, which means that they get brought to a login page, 
@@ -57,12 +102,18 @@ if (COM_isAnonUser()) {
 }
 
 $display .= COM_siteHeader('');
-$display .= COM_startBlock($LANG_RMANAGER['title'], '', COM_getBlockTemplate('_msg_block', 'header'));
+//$display .= COM_startBlock($LANG_RMANAGER['title'], '', COM_getBlockTemplate('_msg_block', 'header')); 
+if ($_GET['msg']) {
+    $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[(int)$_GET['msg']]);
+}
+else if ($_GET['tmsg']) {
+    $display .= ShowTMessageRManager((int)$_GET['tmsg']);
+}
 
 #DEBUG VARIABLE later in config file. set at 2MB
 define("MAX_FILE_UPLOAD_SIZE", 2000000); 
 // Are plugins moderated or not
-$plugin_moderated = $_CONF['rmanager_moderated'];
+$plugin_moderated = $_CONF['repository_moderated'];
 
 // So if the user got this far they are logged in, which is great
 
@@ -71,7 +122,7 @@ if (isset($_GET['cmd'])) {
     // a command page, not the reply
 
     if ($_GET['cmd'] == 1) {
-        $data = new Template($_CONF['path'].'plugins/rmanager/templates');
+        $data = new Template($_CONF['path'].'plugins/repository/templates');
 	$data->set_file(array('index'=>'uploadplugin.thtml'));
 	// This instruction sets the javascript language variables
 	$display .= "<script type='text/javascript'>
@@ -110,13 +161,14 @@ if (isset($_GET['cmd'])) {
         $data->set_var('lang_36', $LANG_RMANAGER_UPLUGIN[36]);
         $data->set_var('lang_37', $LANG_RMANAGER_UPLUGIN[37]);
         $data->set_var('lang_38', $LANG_RMANAGER_UPLUGIN[38]);
+        $data->set_var('lang_132', $LANG_RMANAGER_UPLUGIN[132]);
 	$data->parse('output','index');
 	$display .= $data->finish($data->get_var('output'));
   
     }
     else if ($_GET['cmd'] == 2) {
         // Listing of all plugins assigned to your name OR set to moderate
-        $data = new Template($_CONF['path'].'plugins/rmanager/templates');
+        $data = new Template($_CONF['path'].'plugins/repository/templates');
 	$data->set_file(array('index'=>'listplugins.thtml'));
         
         $tblname = $_DB_table_prefix.'repository_maintainers';
@@ -148,7 +200,7 @@ if (isset($_GET['cmd'])) {
         <td class='opt'><a href='pupload.php?cmd=3&pid={$result2['id']}'> {$LANG_RMANAGER_UPLUGIN[78]} </a></td><td class='opt'><a href='pupload.php?cmd=5&id={$result2['id']}'> {$LANG_RMANAGER_UPLUGIN[79]} </a></td><td class='opt'><a href='pupload.php?cmd=6&id={$result2['id']}'> {$LANG_RMANAGER_UPLUGIN[80]} </a></td></tr>";
         }
 
-        $data->set_var('lang_0', $LANG_RMANAGER_DPLUGIN[0]);
+        $data->set_var('lang_0', '<b>'.$LANG_RMANAGER_DPLUGIN[0].'</b>');
 	
 	// Was there any data
 	if (($string_of_author_code == "") and ($string_of_maintainer_code == "")) {
@@ -183,11 +235,7 @@ if (isset($_GET['cmd'])) {
 
         // Check and make sure the plugin id is not 0. If it is 0, then lets throw an error and get out
         if ($p_id == 0) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER['error_invalpluginid']);            
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
+            header("Location: index.php?msg=133");
             exit();
         }
 
@@ -198,20 +246,12 @@ if (isset($_GET['cmd'])) {
         
         // If it is NULL, it means that the id entered was invalid (plugin does not exist)
         if ($author_id == NULL) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER['error_invalpluginid']);            
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();            
+            header("Location: index.php?msg=133");
+            exit(); 
         }
         else if ($author_id['uploading_author'] !== $_USER['uid']) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER['error_pdel_noperm']);            
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();    
+            header("Location: index.php?msg=134");
+            exit(); 
         }
 
         // Obviously it is authenticated, lets delete the entry from the database (MUNCH)
@@ -221,22 +261,17 @@ if (isset($_GET['cmd'])) {
         DB_query("DELETE FROM {$tblname} WHERE id = '{$author_id['id']}';");
         
         // Now remove from the repository listing
-        $rmfile = unlink("../repository/".$filepath);
+        $rmfile = unlink("main/".$filepath);
 
         // Did it fail? 
         if ($rmfile === FALSE) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER['error_pdel_erm'].$filepath);            
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();  
+            header("Location: index.php?tmsg=135&enable_spf=1&file=main/{$filepath}");
+            exit();
         }
         else {
            // Since everything has succeeded successfully, display any files that should be included, exit
-           $display = COM_siteHeader('');
-           $display .= COM_startBlock($LANG_RMANAGER['title'], '', COM_getBlockTemplate('_msg_block', 'header'));
-           $display .= $LANG_RMANAGER[43];
+           header("Location: pupload.php?cmd=2&msg=43");
+           exit;
         }
  
     }
@@ -247,11 +282,7 @@ if (isset($_GET['cmd'])) {
 
         // Check and make sure the plugin id is not 0. If it is 0, then lets throw an error and get out
         if ($p_id == 0) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER['error_invalpluginid']);            
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
+            header("Location: index.php?msg=133");
             exit();
         }
 
@@ -262,12 +293,8 @@ if (isset($_GET['cmd'])) {
         
         // If it is NULL, it means that the id entered was invalid (plugin does not exist)
         if ($row == FALSE) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER['error_invalpluginid']);            
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();            
+            header("Location: index.php?msg=133");
+            exit();        
         }
 
         // Now we can load the template, adding the required fields in place
@@ -280,7 +307,7 @@ if (isset($_GET['cmd'])) {
         </script>";
         
         // Get repositories from database       
-        $data = new Template($_CONF['path'].'plugins/rmanager/templates');
+        $data = new Template($_CONF['path'].'plugins/repository/templates');
         $data->set_file(array('index'=>'editplugin.thtml'));
         $data->set_var('lang_0', $LANG_RMANAGER_UPLUGIN[75]);
         $data->set_var('lang_1', $LANG_RMANAGER_UPLUGIN[1]);
@@ -309,11 +336,13 @@ if (isset($_GET['cmd'])) {
         $data->set_var('lang_36', $LANG_RMANAGER_UPLUGIN[36]);
         $data->set_var('lang_37', $LANG_RMANAGER_UPLUGIN[37]);
         $data->set_var('lang_38', $LANG_RMANAGER_UPLUGIN[38]);
+        $data->set_var('lang_132', $LANG_RMANAGER_UPLUGIN[132]);
 	
         // Set hard coded values now
 	$data->set_var('value_0', $row['id']);
         $data->set_var('value_2', $row['name']);        
         $data->set_var('value_3', $row['version']);     
+        $data->set_var('value_A', $row['fname']);
           
         // We have to figure out what databases are supported.. 
         // Since it is controlled using the bit method, we have to now &AND the value for each position, and find it its on or off
@@ -354,7 +383,7 @@ if (isset($_GET['cmd'])) {
     }
     else if ($_GET['cmd'] == 5) {
         // Show Upload Patch
-        $data = new Template($_CONF['path'].'plugins/rmanager/templates');
+        $data = new Template($_CONF['path'].'plugins/repository/templates');
 	$data->set_file(array('index'=>'addpatch.thtml'));
 	// This instruction sets the javascript language variables
 	
@@ -384,7 +413,7 @@ if (isset($_GET['cmd'])) {
     }
     else if ($_GET['cmd'] == 6) {
         // Show Upgrade Announcement
-        $data = new Template($_CONF['path'].'plugins/rmanager/templates');
+        $data = new Template($_CONF['path'].'plugins/repository/templates');
 	$data->set_file(array('index'=>'upgrade.thtml'));
 	// This instruction sets the javascript language variables
 	
@@ -423,15 +452,12 @@ else if (isset($_GET['ret'])) {
             $credits = (isset($_POST['GEEKLOG_CREDITS'])) ? $_POST['GEEKLOG_CREDITS'] : "";
             $update = (isset($_POST['GEEKLOG_UPDATE'])) ? $_POST['GEEKLOG_UPDATE'] : "0";
             $state = (isset($_POST['GEEKLOG_STATE'])) ? $_POST['GEEKLOG_STATE'] : "stable";
+            $fname = (isset($_POST['GEEKLOG_PLNAME2'])) ? $_POST['GEEKLOG_PLNAME2'] : "";
 
             // Check required variables for validity
             // And we also have to check to make sure that plugin already exists
-            if (($name == "") or ($version == "") or ($shrt_des == "") or (($mysql == "no") and ($mssql == "no") and ($postgre == "no"))) {
-                $display = COM_siteHeader('');
-                $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[23]); 
-                $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                $display .= COM_siteFooter();
-                COM_output($display);
+            if (($name == "") or ($fname == "") or ($version == "") or ($shrt_des == "") or (($mysql == "no") and ($mssql == "no") and ($postgre == "no"))) {
+                header("Location: pupload.php?cmd=1&msg=23");
                 exit();
             }
             
@@ -443,35 +469,21 @@ else if (isset($_GET['ret'])) {
 	   $res = DB_fetchArray($result);
            
            if (($res !== FALSE) and ($update == "0")) {
-                $display = COM_siteHeader('');
-                $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[24]); 
-                $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                $display .= COM_siteFooter();
-                COM_output($display);
-                exit();               
+               header("Location: pupload.php?cmd=1&msg=24");
+               exit();            
            }
 	   
 	   // Is the file size too large (MAX_UPLOADED_FILE_SIZE)
 	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > MAX_FILE_UPLOAD_SIZE) {
-                $display = COM_siteHeader('');
-                $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[30]. ' invalsize )'); 
-                $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                $display .= COM_siteFooter();
-                COM_output($display);
-                exit();    	       
+                header("Location: pupload.php?cmd=1&msg=30");
+                exit();
 	   }
 	   
 	   // Have to make sure its an uploaded file, and not a trick to get to /etc/psswd etc
 	   if ( (!(is_uploaded_file($_FILES['GEEKLOG_FILE_PUPLOAD']['tmp_name']))) or ($_FILES['GEEKLOG_FILE_PUPLOAD']['error'] !==  UPLOAD_ERR_OK )) {
-                $display = COM_siteHeader('');
-                $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[30]. ' '.$_FILES['GEEKLOG_FILE_PUPLOAD']['error']. ')'); 
-                $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                $display .= COM_siteFooter();
-                COM_output($display);
-                exit();    
+                header("Location: pupload.php?cmd=1&tmsg=30&enable_spf=1&errno={$_FILES['GEEKLOG_FILE_PUPLOAD']['error']}");
+                exit();
 	   }
-
-           
 
            // The plugin does not already exist, try file formatting - get base file name
            $file_param = pathinfo($_FILES['GEEKLOG_FILE_PUPLOAD']['name']);
@@ -527,12 +539,8 @@ else if (isset($_GET['ret'])) {
                    // Done now, we have our listing :)
                    break;
                default:
-                   $display = COM_siteHeader('');
-                   $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[29]); 
-		   $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                   $display .= COM_siteFooter();
-                   COM_output($display);
-                   exit();      
+                   header("Location: pupload.php?cmd=1&msg=29");
+                   exit();  
                    break;
 
            }
@@ -560,7 +568,7 @@ else if (isset($_GET['ret'])) {
            // As you can see, the mask goes up by power of 2, so 2^0, 2^1, 2^2, 2^3, etc
            // In the case that functions.inc is missing, the end integer (last 4 bits) would be 1011 or 11. All present is F or 15
            // Array is format: Mask #=>file name
-           $required_fnames = array(1=> "autoinstall.php", 2=> "autouninstall.php", 4 => "functions.inc", 8 => "config.php");
+           $required_fnames = array(1=> "autoinstall.php", 2=> "autouninstall.php", 4 => "functions.inc");
            $bitwise_integer_value = 0;           
 
            // Time to loop through the array, getting the file name's basename, and then uploading it
@@ -628,13 +636,14 @@ else if (isset($_GET['ret'])) {
            $shrt_des = COM_applyFilter($shrt_des);
            $credits = COM_applyFilter($credits);
            $state = COM_applyFilter($state);
+           $fname = COM_applyFilter($fname);
 	  
 	   // Send query to the database
            $tblname = $_DB_table_prefix.'repository_listing';
 	   // This type of string format needs to be against the 'wall' and not indented for it to work -- 
 $qstr = <<<HETERO
-INSERT INTO {$tblname}(ext, name, version, db, dependencies, soft_dep, short_des, credits, uploading_author, install, state, moderation) 
-VALUES('{$full_ext}', '{$name}','{$version}','{$database_bit_value}','{$dependencies}','{$sys_dependencies}','{$shrt_des}','{$credits}','{$_USER['uid']}','{$automatic_installer}','{$state}', '{$plugin_moderated}');
+INSERT INTO {$tblname}(ext, name, version, db, dependencies, soft_dep, short_des, credits, uploading_author, install, state, moderation, fname) 
+VALUES('{$full_ext}', '{$name}','{$version}','{$database_bit_value}','{$dependencies}','{$sys_dependencies}','{$shrt_des}','{$credits}','{$_USER['uid']}','{$automatic_installer}','{$state}', '{$plugin_moderated}', '{$fname}');
 HETERO;
 
            $result = DB_query($qstr);
@@ -648,17 +657,13 @@ HETERO;
 	       $output_repository = "tmp_uploads/".$name.'_'.$version.'_'.$state.'_'.$MYSQL_ID.$full_ext;  
 	   }
 	   else {
-	       $output_repository = "../repository/".$name.'_'.$version.'_'.$state.'_'.$MYSQL_ID.$full_ext;
+	       $output_repository = "main/".$name.'_'.$version.'_'.$state.'_'.$MYSQL_ID.$full_ext;
 	   }
 	   
 	   // Move the archive now
 	   if (!(move_uploaded_file($_FILES['GEEKLOG_FILE_PUPLOAD']['tmp_name'], $output_repository))) {
-               $display = COM_siteHeader('');
-               $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[31]); 
-               $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-               $display .= COM_siteFooter();
-               COM_output($display);
-               exit();    
+               header("Location: pupload.php?cmd=1&msg=31");
+               exit();  
 	   }
 	   
 	   // Make a message saying if any files are missing
@@ -674,12 +679,11 @@ HETERO;
 	   
 	   // Since everything has succeeded successfully, display any files that should be included, exit
            $display = COM_siteHeader('');
-	   $display .= COM_startBlock($LANG_RMANAGER['title'], '', COM_getBlockTemplate('_msg_block', 'header'));
 	   if ($plugin_moderated == TRUE) {
-               $display .= $LANG_RMANAGER_UPLUGIN[39]."<br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;        
+               $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;        
 	   }
 	   else {
-	       $display .= $LANG_RMANAGER_UPLUGIN[39]."<br /><br /><a href='{$output_repository}'>{$name}_{$version}_{$state}_{$MYSQL_ID}{$full_ext}</a>".$filesmissing_msg;     
+	       $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br /><a href='{$output_repository}'>{$name}_{$version}_{$state}_{$MYSQL_ID}{$full_ext}</a>".$filesmissing_msg;     
 	   }
         }
         else if (isset($_POST['submit_edit_plugin'])) {
@@ -695,15 +699,12 @@ HETERO;
             $credits = (isset($_POST['GEEKLOG_CREDITS'])) ? $_POST['GEEKLOG_CREDITS'] : "";
             $update = (isset($_POST['GEEKLOG_UPDATE'])) ? $_POST['GEEKLOG_UPDATE'] : "0";
             $state = (isset($_POST['GEEKLOG_STATE'])) ? $_POST['GEEKLOG_STATE'] : "stable";
-
+            $fname = (isset($_POST['GEEKLOG_PLNAME2'])) ? $_POST['GEEKLOG_PLNAME2'] : "";
+            
             // Check required variables for validity
             // And we also have to check to make sure that plugin already exists
             if (($name == "") or ($version == "") or ($shrt_des == "") or (($mysql == "no") and ($mssql == "no") and ($postgre == "no"))) {
-                $display = COM_siteHeader('');
-                $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[23]); 
-                $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                $display .= COM_siteFooter();
-                COM_output($display);
+                header("Location: pupload.php?cmd=2&msg=23");
                 exit();
             }	    
 
@@ -713,23 +714,15 @@ HETERO;
 		
 		// Is the file size too large (MAX_UPLOADED_FILE_SIZE)
 	        if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > MAX_FILE_UPLOAD_SIZE) {
-                    $display = COM_siteHeader('');
-                    $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[30]. ' invalsize )'); 
-                    $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                    $display .= COM_siteFooter();
-                    COM_output($display);
-                    exit();    	       
+                header("Location: pupload.php?cmd=2&msg=30");
+                exit();    
 	        }
 		
 	        // Have to make sure its an uploaded file, and not a trick to get to /etc/psswd etc
 	        if ( (!(is_uploaded_file($_FILES['GEEKLOG_FILE_PUPLOAD']['tmp_name']))) or ($_FILES['GEEKLOG_FILE_PUPLOAD']['error'] !==  UPLOAD_ERR_OK )) {
-                    $display = COM_siteHeader('');
-                    $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[30]. ' '.$_FILES['GEEKLOG_FILE_PUPLOAD']['error']. ')'); 
-                    $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                    $display .= COM_siteFooter();
-                    COM_output($display);
-                    exit();    
-	        }
+                    header("Location: pupload.php?cmd=2&tmsg=30&enable_spf=1&errno={$_FILES['GEEKLOG_FILE_PUPLOAD']['error']}");
+                    exit();
+                }
 		
                 // The plugin does not already exist, try file formatting - get base file name
                 $file_param = pathinfo($_FILES['GEEKLOG_FILE_PUPLOAD']['name']);
@@ -785,12 +778,8 @@ HETERO;
                         // Done now, we have our listing :)
                         break;
                     default:
-                        $display = COM_siteHeader('');
-                        $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[29]); 
-		        $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                        $display .= COM_siteFooter();
-                        COM_output($display);
-                        exit();      
+                        header("Location: pupload.php?cmd=2&msg=29");
+                        exit();  
                         break;
 
                 }
@@ -818,7 +807,7 @@ HETERO;
                 // As you can see, the mask goes up by power of 2, so 2^0, 2^1, 2^2, 2^3, etc
                 // In the case that functions.inc is missing, the end integer (last 4 bits) would be 1011 or 11. All present is F or 15
                 // Array is format: Mask #=>file name
-                $required_fnames = array(1=> "autoinstall.php", 2=> "autouninstall.php", 4 => "functions.inc", 8 => "config.php");
+                $required_fnames = array(1=> "autoinstall.php", 2=> "autouninstall.php", 4 => "functions.inc");
                 $bitwise_integer_value = 0;           
 
                 // Time to loop through the array, getting the file name's basename, and then uploading it
@@ -888,7 +877,8 @@ HETERO;
             $credits = COM_applyFilter($credits);
             $state = COM_applyFilter($state);
 	    $id = (int)((isset($_GET['pid'])) ? $_GET['pid'] : 0);
-
+            $fname = COM_applyFilter($fname);
+           
             // Send query to the database
             $tblname = $_DB_table_prefix.'repository_listing';
 
@@ -901,18 +891,14 @@ HETERO;
                 $tbl2 = $_DB_table_prefix.'repository_maintainer';
                 $result = DB_query("SELECT * FROM {$tbl2} WHERE maintainer_id = {$_USER['uid']} AND plugin_id = {$id};");
                 if ($result === NULL) {
-                    $display = COM_siteHeader('');
-                    $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[74]); 
-                    $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                    $display .= COM_siteFooter();
-                    COM_output($display);
-                    exit();    
+                    header("Location: pupload.php?cmd=2&msg=74");
+                    exit();                     
                 }
             }
            	  
 	    // This type of string format needs to be against the 'wall' and not indented for it to work -- 
 $qstr = <<<HETERO
-UPDATE {$tblname} SET ext = '{$full_ext}', name = '{$name}', version = '{$version}', db = '{$database_bit_value}', dependencies = '{$dependencies}', soft_dep = '{$sys_dependencies}', short_des = '{$shrt_des}', credits = '{$credits}', install = '{$automatic_installer}', state = '{$state}', moderation = '{$plugin_moderated}' WHERE id = '{$id}';
+UPDATE {$tblname} SET ext = '{$full_ext}', name = '{$name}', version = '{$version}', db = '{$database_bit_value}', dependencies = '{$dependencies}', soft_dep = '{$sys_dependencies}', short_des = '{$shrt_des}', credits = '{$credits}', install = '{$automatic_installer}', state = '{$state}', fname = '{$fname}', moderation = '{$plugin_moderated}' WHERE id = '{$id}';
 HETERO;
 
             // Run Query
@@ -929,17 +915,13 @@ HETERO;
 	            $output_repository = "tmp_uploads/".$name.'_'.$version.'_'.$state.'_'.$id.$full_ext;  
 	        }
 	        else {
-	            $output_repository = "../repository/".$name.'_'.$version.'_'.$state.'_'.$id.$full_ext;
+	            $output_repository = "main/".$name.'_'.$version.'_'.$state.'_'.$id.$full_ext;
 	        }
 	   
 	        // Move the archive now
 	        if (!(move_uploaded_file($_FILES['GEEKLOG_FILE_PUPLOAD']['tmp_name'], $output_repository))) {
-                    $display = COM_siteHeader('');
-                    $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[31]); 
-                    $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                    $display .= COM_siteFooter();
-                    COM_output($display);
-                    exit();    
+                    header("Location: pupload.php?cmd=2&msg=31");
+                    exit();  
      	        }
 	   
 	        // Make a message saying if any files are missing
@@ -958,17 +940,16 @@ HETERO;
 	    
 	   // Since everything has succeeded successfully, display any files that should be included, exit
            $display = COM_siteHeader('');
-	   $display .= COM_startBlock($LANG_RMANAGER['title'], '', COM_getBlockTemplate('_msg_block', 'header'));
 	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['error'] ===  UPLOAD_ERR_NO_FILE) {
 	       $display .= $LANG_RMANAGER_UPLUGIN[76];    
 	   }
 	   else if ($plugin_moderated == TRUE) {
-               $display .= $LANG_RMANAGER_UPLUGIN[39]."<br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;        
+               $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;               
 	   }
 
 	   else {
-	       $display .= $LANG_RMANAGER_UPLUGIN[39]."<br /><br /><a href='{$output_repository}'>{$name}_{$version}_{$state}_{$MYSQL_ID}{$full_ext}</a>".$filesmissing_msg;     
-	   }
+               $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br /><a href='{$output_repository}'>{$name}_{$version}_{$state}_{$MYSQL_ID}{$full_ext}</a>".$filesmissing_msg;     	   
+           }
 
 
 	}
@@ -985,11 +966,7 @@ HETERO;
             // Check required variables for validity
             // And we also have to check to make sure that plugin already exists
             if (($name == "") or ($vtype == "") or ($vtype == "") or ($id == 0) or ($des == "")) {
-                $display = COM_siteHeader('');
-                $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[57]); 
-                $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                $display .= COM_siteFooter();
-                COM_output($display);
+                header("Location: pupload.php?cmd=2&msg=57");
                 exit();
             }
             // Send query to the database
@@ -1004,12 +981,8 @@ HETERO;
                 $tbl2 = $_DB_table_prefix.'repository_maintainer';
                 $result = DB_query("SELECT * FROM {$tbl2} WHERE maintainer_id = {$_USER['uid']} AND plugin_id = {$id};");
                 if ($result === NULL) {
-                    $display = COM_siteHeader('');
-                    $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[74]); 
-                    $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                    $display .= COM_siteFooter();
-                    COM_output($display);
-                    exit();    
+                    header("Location: pupload.php?cmd=2&msg=74");
+                    exit();
                 }
             }
 	    
@@ -1021,32 +994,20 @@ HETERO;
 	   $res = DB_fetchArray($result);
            
            if (($res !== FALSE) and ($update == "0")) {
-                $display = COM_siteHeader('');
-                $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[58]); 
-                $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                $display .= COM_siteFooter();
-                COM_output($display);
-                exit();               
+                header("Location: pupload.php?cmd=2&msg=58");
+                exit();           
            }
 	   
 	   // Is the file size too large (MAX_UPLOADED_FILE_SIZE)
 	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > MAX_FILE_UPLOAD_SIZE) {
-                $display = COM_siteHeader('');
-                $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[30]. ' invalsize )'); 
-                $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                $display .= COM_siteFooter();
-                COM_output($display);
-                exit();    	       
+                header("Location: pupload.php?cmd=2&msg=30");
+                exit();       
 	   }
 	   
 	   // Have to make sure its an uploaded file, and not a trick to get to /etc/psswd etc
 	   if ( (!(is_uploaded_file($_FILES['GEEKLOG_FILE_PUPLOAD']['tmp_name']))) or ($_FILES['GEEKLOG_FILE_PUPLOAD']['error'] !==  UPLOAD_ERR_OK )) {
-                $display = COM_siteHeader('');
-                $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[30]. ' '.$_FILES['GEEKLOG_FILE_PUPLOAD']['error']. ')'); 
-                $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                $display .= COM_siteFooter();
-                COM_output($display);
-                exit();    
+                header("Location: pupload.php?cmd=2&msg=30");
+                exit();  
 	   }
 
            // The patch does not already exist, try file formatting - get base file name
@@ -1103,12 +1064,8 @@ HETERO;
                    // Done now, we have our listing :)
                    break;
                default:
-                   $display = COM_siteHeader('');
-                   $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[29]); 
-		   $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                   $display .= COM_siteFooter();
-                   COM_output($display);
-                   exit();      
+                   header("Location: pupload.php?cmd=2&msg=30");
+                   exit();  
                    break;
 
            }
@@ -1136,7 +1093,7 @@ HETERO;
            // As you can see, the mask goes up by power of 2, so 2^0, 2^1, 2^2, 2^3, etc
            // In the case that functions.inc is missing, the end integer (last 4 bits) would be 1011 or 11. All present is F or 15
            // Array is format: Mask #=>file name
-           $required_fnames = array(1=> "install_patch.php");
+           $required_fnames = array(1=> "update.php");
            $bitwise_integer_value = 0;           
 
            // Time to loop through the array, getting the file name's basename, and then uploading it
@@ -1188,13 +1145,25 @@ HETERO;
            $vtype = COM_applyFilter($vtype);
            $severity = COM_applyFilter($severity);
 	   $des = COM_applyFilter($des);
-	   
-	   // Send query to the database
+	   $update_number = 0;
            $tblname = $_DB_table_prefix.'repository_patches';
+           
+           // Now get the update number for that plugin
+           $result = DB_query("SELECT update_number FROM {$tblname} WHERE plugin_id = '{$id}';");
+           
+           while ( ($result2 = DB_fetchArray($result)) !== FALSE) {
+               if ($result2['update_number'] > $update_number) {
+                   $update_number = $result2['update_number'];
+               }
+           }
+           
+           $update_number++;
+           
+	   // Send query to the database
 	   // This type of string format needs to be against the 'wall' and not indented for it to work -- 
 $qstr = <<<HETERO
-INSERT INTO {$tblname}(name, plugin_id, uploading_author, applies_num, version, ext, severity, automatic_install, moderation, description) 
-VALUES('{$name}','{$id}','{$_USER['uid']}','{$vtype}','{$version}','{$full_ext}','{$severity}','{$automatic_installer}', '{$plugin_moderated}', '{$des}');
+INSERT INTO {$tblname}(name, plugin_id, uploading_author, applies_num, version, ext, severity, automatic_install, moderation, description, update_number) 
+VALUES('{$name}','{$id}','{$_USER['uid']}','{$vtype}','{$version}','{$full_ext}','{$severity}','{$automatic_installer}', '{$plugin_moderated}', '{$des}', '{$update_number}');
 HETERO;
 
            $result = DB_query($qstr);
@@ -1208,17 +1177,13 @@ HETERO;
 	       $output_repository = "tmp_uploads/patches/".$name.'_'.$version.'_'.$vtype.'_'.$MYSQL_ID.$full_ext;  
 	   }
 	   else {
-	       $output_repository = "../repository/patches/".$name.'_'.$version.'_'.$vtype.'_'.$MYSQL_ID.$full_ext;
+	       $output_repository = "main/patches/".$name.'_'.$version.'_'.$vtype.'_'.$MYSQL_ID.$full_ext;
 	   }
 	   
 	   // Move the archive now
 	   if (!(move_uploaded_file($_FILES['GEEKLOG_FILE_PUPLOAD']['tmp_name'], $output_repository))) {
-               $display = COM_siteHeader('');
-               $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[31]); 
-               $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-               $display .= COM_siteFooter();
-               COM_output($display);
-               exit();    
+                header("Location: pupload.php?cmd=2&msg=31");
+                exit(); 
 	   }
 	 
 	   // Make a message saying if any files are missing
@@ -1234,12 +1199,11 @@ HETERO;
 	   
 	   // Since everything has succeeded successfully, display any files that should be included, exit
            $display = COM_siteHeader('');
-	   $display .= COM_startBlock($LANG_RMANAGER['title'], '', COM_getBlockTemplate('_msg_block', 'header'));
 	   if ($plugin_moderated == TRUE) {
-               $display .= $LANG_RMANAGER_UPLUGIN[39]."<br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;        
+               $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;        
 	   }
 	   else {
-	       $display .= $LANG_RMANAGER_UPLUGIN[39]."<br /><br /><a href='{$output_repository}'>{$name}_{$version}_{$state}_{$MYSQL_ID}{$full_ext}</a>".$filesmissing_msg;     
+	       $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br /><a href='{$output_repository}'>{$name}_{$version}_{$state}_{$MYSQL_ID}{$full_ext}</a>".$filesmissing_msg;     
 	   }
 
 	    
@@ -1250,13 +1214,8 @@ HETERO;
             $id = (int) ( (isset($_GET['id'])) ? $_GET['id'] : 0);
 
             if( ($version == null) or ($id == 0)) {
-                $display = COM_siteHeader('');
-                $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[72]); 
-                $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-                $display .= COM_siteFooter();
-                COM_output($display);
-                exit();               
-
+                header("Location: pupload.php?cmd=2&msg=72");
+                exit(); 
             }
 
             // Insert into the database
@@ -1272,27 +1231,25 @@ HETERO;
 
            $result = DB_query($qstr);
             
-           $display = COM_siteHeader('');
-           $display .= COM_startBlock($LANG_RMANAGER['title'], '', COM_getBlockTemplate('_msg_block', 'header'));
-           $display .= $LANG_RMANAGER_UPLUGIN[73];
-         
+           header("Location: pupload.php?cmd=2&msg=73");
+           exit(); 
               
         }
         else {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER['error_sinvalidget']);   
+           header("Location: index.php?cmd=2&msg=136");
+           exit();  
         }
     }
     else {
-        $display = COM_siteHeader('');
-        $display .= COM_showMessageText($LANG_RMANAGER['error_invalidget']);   
+       header("Location: index.php?cmd=2&msg=136");
+       exit(); 
     }
     
 
 }
 else {
-    $display = COM_siteHeader('');
-    $display .= COM_showMessageText($LANG_RMANAGER['error_invalidget']);   
+    header("Location: index.php?cmd=2&msg=136");
+    exit();
 }
 
 $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));

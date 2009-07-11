@@ -52,16 +52,16 @@ if (strpos(strtolower($_SERVER['PHP_SELF']), 'install_defaults.php') !== false) 
 * @return   boolean     true: success; false: an error occurred
 *
 */
-function plugin_initconfig_rmanager()
+function plugin_initconfig_repository()
 {
     global $_CONF;
 
     $c = config::get_instance();
-    if (!$c->group_exists('rmanager')) {
-        $c->add('sg_main', NULL, 'subgroup', 0, 0, NULL, 0, true, 'rmanager');
-        $c->add('fs_main', NULL, 'fieldset', 0, 0, NULL, 0, true, 'rmanager');
-        $c->add('rmanager_moderated', 0,
-                'select', 0, 0, 0, 10, true, 'rmanager');
+    if (!$c->group_exists('repository')) {
+        $c->add('sg_main', NULL, 'subgroup', 0, 0, NULL, 0, true, 'repository');
+        $c->add('fs_main', NULL, 'fieldset', 0, 0, NULL, 0, true, 'repository');
+        $c->add('repository_moderated', 0,
+                'select', 0, 0, 0, 10, true, 'repository');
     }
 
     return true;

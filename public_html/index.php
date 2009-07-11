@@ -33,6 +33,53 @@ require_once '../lib-common.php';
 
 $display = '';
 
+
+/**
+* Displays a message on the webpage according to the tmsg standard ($msg contains array key for $MESSAGE array, remaining GET parameters contain sprintf 
+* data
+* 
+* @param    int     $msg        ID of message to show
+* @return   string              HTML block with message
+*
+*/
+function ShowTMessageRManager($msg)
+{
+    global $LANG_RMANAGER_UPLUGIN;
+
+    $retval = '';
+
+    if ($msg > 0) {
+        $message = $LANG_RMANAGER_UPLUGIN[$msg];
+         
+        // Only if $_GET['enable_spf'] is enabled
+        if ( (isset($_GET['enable_spf'])) and ($_GET['enable_spf'] == 1)) {
+          
+            $eval = '$holder = sprintf($message';
+            foreach ($_GET as $name => $key) {
+                // If its msg as the name, we pass as thats ok. Otherwise, lets start racking up!
+                if ( ($name == "tmsg") or ($name == "enable_spf")) {
+                    continue;
+                }
+              
+                $eval .= ",COM_applyFilter(\$_GET['$name'])";
+            }
+            $eval .= ');';
+            
+            // Evaluate code
+            // Use of EVAL here is totally safe as we built the string
+            eval($eval);
+            $message = $holder;
+        }
+
+        if (!empty($message)) {
+            $retval .= COM_showMessageText($message);
+        }
+    }
+
+    return $retval;
+}
+
+
 // Is anonymous user, which means they have not logged in, which means they cannot access the page, which means that they get brought to a login page, 
 // which means they are told to login or register, which means Tim is happy
 if (COM_isAnonUser()) {
@@ -60,9 +107,17 @@ if (COM_isAnonUser()) {
 // So if the user got this far they are logged in, which is great
 // So display upload form
 $display .= COM_siteHeader('');
+
+if ($_GET['msg']) {
+    $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[(int)$_GET['msg']]);
+}
+else if ($_GET['tmsg']) {
+    $display .= ShowTMessageRManager((int)$_GET['tmsg']);
+}
+
 $display .= COM_startBlock($LANG_RMANAGER['title'], '', COM_getBlockTemplate('_msg_block', 'header'));
 
-$data = new Template($_CONF['path'].'plugins/rmanager/templates');
+$data = new Template($_CONF['path'].'plugins/repository/templates');
 $data->set_file(array('index'=>'indexpiece.thtml'));
 $data->set_var('lang_91', $LANG_RMANAGER_UPLUGIN[91]);
 $data->set_var('lang_92', $LANG_RMANAGER_UPLUGIN[92]);

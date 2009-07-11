@@ -4,7 +4,7 @@
 				    {lang_0}<br />
 <div id="rmanager_div_listofplugins">
 <table>
-<tr>
+<tr style='font-weight:bold;'>
 <td class='name'>{lang_84}</td><td class='type'>{lang_85}</td><td class='opt'>{lang_86} </td><td class='opt'>{lang_87}</td><td class='opt'>{lang_88}</td><td class='opt'>{lang_89}</td>
 </tr>
 {lang_1}

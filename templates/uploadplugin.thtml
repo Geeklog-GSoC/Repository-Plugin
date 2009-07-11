@@ -11,6 +11,9 @@
 
 				    <div class="smalltxt">{lang_3}</div>
 				    <input maxlength="100" type="text" name="GEEKLOG_PLNAME" id="GEEKLOG_PLNAME" value="" />
+                                    
+                                    <div class="smalltxt">{lang_132}</div>
+                                    <input maxlength="100" type="text" name="GEEKLOG_PLNAME2" id="GEEKLOG_PLNAME2" value="" />                                    
 				    
 				    <div class="smalltxt">{lang_4}</div>
 				    <input type="text" name="GEEKLOG_PLVERSION" id="GEEKLOG_PLVERSION" value="" />

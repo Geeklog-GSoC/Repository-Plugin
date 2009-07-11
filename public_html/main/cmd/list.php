@@ -1,10 +1,14 @@
 <?php
+header("Content-Type: text/xml");
+header("Cache-Control: no-store, no-cache, must-revalidate");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
 
 /* Reminder: always indent with 4 spaces (no tabs). */
 // +---------------------------------------------------------------------------+
-// | Repository Management                                                     |
+// | List of plugins in repository                                             |
 // +---------------------------------------------------------------------------+
-// | autoinstall.php                                                           |
+// | list.php                                                                  |
 // |                                                                           |
 // | Geeklog Repository Manager                                                |
 // +---------------------------------------------------------------------------+
@@ -29,68 +33,49 @@
 // |                                                                           |
 // +---------------------------------------------------------------------------+
 
-function plugin_autoinstall_repository($pi_name) 
-{
-    $pi_name = 'repository';
-    $pi_display_name = 'Repository Manager';
-    $pi_admin = $pi_display_name.' Admin';
+require_once '../../../lib-common.php';
 
-    $info = array(
-        'pi_name'         => $pi_name,
-        'pi_display_name' => $pi_display_name,
-        'pi_version'      => '1.0.0',
-        'pi_gl_version'   => '1.6.0',
-        'pi_homepage'     => 'http://www.geeklog.net/'
-    );
-    
-    $groups = array(
-        $pi_admin => 'Has full access to ' . $pi_display_name . ' features'
-    );
+// Output preliminary XML
+echo <<<XML
+<?xml version="1.0"?>
 
-    $features = array(
-        $pi_name . '.manage'  => 'Ability to manage the repository',
+<repository
+xmlns="http://www.geeklog.com"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.geeklog.com ../../rmanager/xml/repository_listing.xsd">
+<!-- Start Plugin List -->
+XML;
 
-    );
-    
-    $mappings = array(
-        $pi_name . '.manage'  => array($pi_admin),
+// Create query, lets go
+$tblname = $_DB_table_prefix.'repository_listing';
+$qstr = "SELECT * FROM {$tblname} WHERE moderation = '0';";
 
-    );
+$result = DB_query($qstr);
 
-    $tables = array(
-        'repository_listing',
-	'repository_patches',
-	'repository_maintainers',
-	'repository_upgrade'
-    );
-
-    $inst_parms = array(
-        'info'      => $info,
-        'groups'    => $groups,
-        'features'  => $features,
-        'mappings'  => $mappings,
-        'tables'    => $tables
-    );
-
-    return $inst_parms;
- 
-
-
+// Loop until we reach a 0, outputting the XML every time
+while ( ($result2 = DB_fetchArray($result)) !== FALSE) {
+echo <<<EEPROM
+<plugin>
+<id>{$result2['id']}</id>
+<name>{$result2['name']}</name>
+<fname>{$result2['fname']}</fname>
+<version>{$result2['version']}</version>
+<db>{$result2['db']}</db>
+<dependencies>{$result2['dependencies']}</dependencies>
+<soft_dep>{$result2['soft_dep']}</soft_dep>
+<short_des>{$result2['short_des']}</short_des>
+<credits>{$result2['credits']}</credits>
+<vett>{$result2['vett']}</vett>
+<downloads>{$result2['downloads']}</downloads>
+<install>{$result2['install']}</install>
+<state>{$result2['state']}</state>
+<ext>{$result2['ext']}</ext>
+</plugin>
+EEPROM;
 }
 
-
-function plugin_load_configuration_repository($pi_name)
-{
-    global $_CONF;
-
-    $base_path = $_CONF['path'] . 'plugins/' . $pi_name . '/';
-
-    require_once $_CONF['path_system'] . 'classes/config.class.php';
-    require_once $base_path . 'install_defaults.php';
-
-    return plugin_initconfig_repository();
-}
-
-
-
+echo <<<OMM
+<!-- End Plugin List -->
+</repository>
+OMM;
 ?>

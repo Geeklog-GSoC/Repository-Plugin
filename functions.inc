@@ -42,7 +42,7 @@ if (strpos(strtolower($_SERVER['PHP_SELF']), 'functions.inc') !== false) {
     die('This file can not be used on its own.');
 }
 
-$plugin_path = $_CONF['path'] . 'plugins/rmanager/';
+$plugin_path = $_CONF['path'] . 'plugins/repository/';
 
 /**
 * Language file include
@@ -66,16 +66,16 @@ if (file_exists($langfile)) {
 
 
 
-function plugin_getheadercode_rmanager()
+function plugin_getheadercode_repository()
 {
     global $_CONF;
 
     $str = null;
     $str = '<link rel="stylesheet" type="text/css" href="'
-        . $_CONF['site_url'] . '/rmanager/style.css"' . XHTML . '>';
+        . $_CONF['site_url'] . '/repository/style.css"' . XHTML . '>';
 
     $str .= '<script type="text/javascript" src="'
-        . $_CONF['site_url'] . '/rmanager/main.js"></script>';
+        . $_CONF['site_url'] . '/repository/main.js"></script>';
 	
     return $str;
 }

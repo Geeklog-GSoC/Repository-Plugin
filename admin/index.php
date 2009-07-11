@@ -36,9 +36,60 @@ require_once '../../../lib-common.php';
 require_once '../../auth.inc.php';
 
 $display = "";
+/**
+* Displays a message on the webpage according to the tmsg standard ($msg contains array key for $MESSAGE array, remaining GET parameters contain sprintf 
+* data
+* 
+* @param    int     $msg        ID of message to show
+* @return   string              HTML block with message
+*
+*/
+function ShowTMessageRManager($msg)
+{
+    global $LANG_RMANAGER_UPLUGIN;
+
+    $retval = '';
+
+    if ($msg > 0) {
+        $message = $LANG_RMANAGER_UPLUGIN[$msg];
+         
+        // Only if $_GET['enable_spf'] is enabled
+        if ( (isset($_GET['enable_spf'])) and ($_GET['enable_spf'] == 1)) {
+          
+            $eval = '$holder = sprintf($message';
+            foreach ($_GET as $name => $key) {
+                // If its msg as the name, we pass as thats ok. Otherwise, lets start racking up!
+                if ( ($name == "tmsg") or ($name == "enable_spf")) {
+                    continue;
+                }
+              
+                $eval .= ",COM_applyFilter(\$_GET['$name'])";
+            }
+            $eval .= ');';
+            
+            // Evaluate code
+            // Use of EVAL here is totally safe as we built the string
+            eval($eval);
+            $message = $holder;
+        }
+
+        if (!empty($message)) {
+            $retval .= COM_showMessageText($message);
+        }
+    }
+
+    return $retval;
+}
+
+if ($_GET['msg']) {
+    $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[(int)$_GET['msg']]);
+}
+else if ($_GET['tmsg']) {
+    $display .= ShowTMessageRManager((int)$_GET['tmsg']);
+}
 
 // Ensure user even has the rights to access this page
-if (!SEC_hasRights('rmanager.manage')) {
+if (!SEC_hasRights('repository.manage')) {
     $display .= COM_siteHeader('menu', $MESSAGE[30])
              . COM_showMessageText($MESSAGE[29], $MESSAGE[30])
              . COM_siteFooter();
@@ -52,7 +103,6 @@ if (!SEC_hasRights('rmanager.manage')) {
 }
 
 $display .= COM_siteHeader('');
-$display .= COM_startBlock($LANG_RMANAGER['title2'], '', COM_getBlockTemplate('_msg_block', 'header'));
 $glib = "";
 // Are there any plugins to moderate? Lets get that information 
 $tblname = $_DB_table_prefix.'repository_listing';
@@ -81,7 +131,7 @@ if ($count_patches > 0) {
 if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 1)) {
     // Show  Moderate Plugins
     // So show listing of all plugins that need to be moderated
-    $data = new Template($_CONF['path'].'plugins/rmanager/templates');
+    $data = new Template($_CONF['path'].'plugins/repository/templates');
     $data->set_file(array('index'=>'listmoderateplugins.thtml'));
     $data->set_var('lang_95', $LANG_RMANAGER_UPLUGIN[95]);
     $data->set_var('lang_96', $LANG_RMANAGER_UPLUGIN[96]);
@@ -112,7 +162,7 @@ EOM;
 else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 2)) {
     // Show  Moderate Patches
     // So show listing of all plugins that need to be moderated
-    $data = new Template($_CONF['path'].'plugins/rmanager/templates');
+    $data = new Template($_CONF['path'].'plugins/repository/templates');
     $data->set_file(array('index'=>'listmoderateplugins.thtml'));
     $data->set_var('lang_95', $LANG_RMANAGER_UPLUGIN[110]);
     $data->set_var('lang_96', $LANG_RMANAGER_UPLUGIN[96]);
@@ -142,7 +192,7 @@ EOM;
 }
 else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 3)) {
     //  Show all plugins
-    $data = new Template($_CONF['path'].'plugins/rmanager/templates');
+    $data = new Template($_CONF['path'].'plugins/repository/templates');
     $data->set_file(array('index'=>'listmoderateplugins.thtml'));
     $data->set_var('lang_95', $LANG_RMANAGER_UPLUGIN[112]);
     $data->set_var('lang_96', $LANG_RMANAGER_UPLUGIN[96]);
@@ -193,7 +243,7 @@ EOM;
 }
 else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 4)) {
     //  Show all patches
-    $data = new Template($_CONF['path'].'plugins/rmanager/templates');
+    $data = new Template($_CONF['path'].'plugins/repository/templates');
     $data->set_file(array('index'=>'listmoderateplugins.thtml'));
     $data->set_var('lang_95', $LANG_RMANAGER_UPLUGIN[114]);
     $data->set_var('lang_96', $LANG_RMANAGER_UPLUGIN[96]);
@@ -249,7 +299,7 @@ EOM;
 }
 else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 5)) {
     // Show add maintainer
-    $data = new Template($_CONF['path'].'plugins/rmanager/templates');
+    $data = new Template($_CONF['path'].'plugins/repository/templates');
     $data->set_file(array('index'=>'maintainer.thtml'));
     $data->set_var('lang_117', $LANG_RMANAGER_UPLUGIN[117]);
     $data->set_var('lang_118', $LANG_RMANAGER_UPLUGIN[118]);
@@ -263,7 +313,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 5)) {
 }
 else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 7)) {
     // Show search plugin
-    $data = new Template($_CONF['path'].'plugins/rmanager/templates');
+    $data = new Template($_CONF['path'].'plugins/repository/templates');
     $data->set_file(array('index'=>'search.thtml'));
     $data->set_var('lang_124', $LANG_RMANAGER_UPLUGIN[124]);
     $data->set_var('lang_125', $LANG_RMANAGER_UPLUGIN[125]);
@@ -279,7 +329,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 7)) {
 }
 else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 8)) {
     // Show search patch
-    $data = new Template($_CONF['path'].'plugins/rmanager/templates');
+    $data = new Template($_CONF['path'].'plugins/repository/templates');
     $data->set_file(array('index'=>'search.thtml'));
     $data->set_var('lang_124', $LANG_RMANAGER_UPLUGIN[130]);
     $data->set_var('lang_125', $LANG_RMANAGER_UPLUGIN[125]);
@@ -302,11 +352,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[101]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
+            header("Location: index.php?msg=101");
             exit();    
 	}
 	
@@ -317,20 +363,16 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// If the plugin doesn't exist, raise error
 	if ($result2 === FALSE) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[102]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();  	
+            header("Location: index.php?msg=102");
+            exit();  
 	}
 	
 	// Make up file path
 	if ($_GET['cmd'] == 1) {
-	    $fpath = "../../../rmanager/tmp_uploads/".$result2['name'].'_'.$result2['version'].'_'.$result2['state'].'_'.$result2['id'].$result2['ext'];
+	    $fpath = "../../../repository/tmp_uploads/".$result2['name'].'_'.$result2['version'].'_'.$result2['state'].'_'.$result2['id'].$result2['ext'];
 	}
 	else {
-	    $fpath = "../../../repository/".$result2['name'].'_'.$result2['version'].'_'.$result2['state'].'_'.$result2['id'].$result2['ext'];
+	    $fpath = "../../../repository/main/".$result2['name'].'_'.$result2['version'].'_'.$result2['state'].'_'.$result2['id'].$result2['ext'];
 	}
 	
 	// Set it for downloading
@@ -342,12 +384,9 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[101]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();    
+            header("Location: index.php?msg=101");
+            exit();  
+   
 	}
 	
 	// Run DB query, get information
@@ -357,33 +396,29 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// If the plugin doesn't exist, raise error
 	if ($result2 === FALSE) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[102]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();  	
+            header("Location: index.php?msg=102");
+            exit();  
+
 	}
 	
 	// Change Database Flag
 	DB_query("UPDATE {$tblname} SET moderation = 0 WHERE id = '{$id}';");
 	
 	// Make up file path
-	$fpath = "../../../rmanager/tmp_uploads/".$result2['name'].'_'.$result2['version'].'_'.$result2['state'].'_'.$result2['id'].$result2['ext'];
-        $npath = "../../../repository/".$result2['name'].'_'.$result2['version'].'_'.$result2['state'].'_'.$result2['id'].$result2['ext'];
+	$fpath = "../../../repository/tmp_uploads/".$result2['name'].'_'.$result2['version'].'_'.$result2['state'].'_'.$result2['id'].$result2['ext'];
+        $npath = "../../../repository/main/".$result2['name'].'_'.$result2['version'].'_'.$result2['state'].'_'.$result2['id'].$result2['ext'];
 	
         // Move uploaded file 
 	if (!(rename($fpath, $npath))) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[31]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();    
+            header("Location: index.php?msg=31");
+            exit();  
+
 	}
 	
 	// Display OK message
-	$display .= $LANG_RMANAGER_UPLUGIN[104];
+        header("Location: index.php?msg=104");
+        exit();  
+
 	
     }
     else if ( (isset($_GET['ret'])) and (($_GET['ret'] == 3) or ($_GET['ret'] == 8))) {
@@ -392,12 +427,9 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[101]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();    
+            header("Location: index.php?msg=101");
+            exit();  
+
 	}
 	
 	// Run DB query, get information
@@ -407,12 +439,9 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// If the plugin doesn't exist, raise error
 	if ($result2 === FALSE) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[102]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();  	
+            header("Location: index.php?msg=102");
+            exit();  
+
 	}
 	
 	// Change Database Flag
@@ -420,24 +449,22 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// Make up file path
 	if ($_GET['cmd'] == 3) {
-	    $fpath = "../../../rmanager/tmp_uploads/".$result2['name'].'_'.$result2['version'].'_'.$result2['state'].'_'.$result2['id'].$result2['ext'];
+	    $fpath = "../../../repository/tmp_uploads/".$result2['name'].'_'.$result2['version'].'_'.$result2['state'].'_'.$result2['id'].$result2['ext'];
 	}
 	else {
-	    $fpath = "../../../repository/".$result2['name'].'_'.$result2['version'].'_'.$result2['state'].'_'.$result2['id'].$result2['ext'];
+	    $fpath = "../../../repository/main/".$result2['name'].'_'.$result2['version'].'_'.$result2['state'].'_'.$result2['id'].$result2['ext'];
 	}
 	
         // Move uploaded file 
 	if (!(unlink($fpath))) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[106].$fpath); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();    
+            header("Location: index.php?msg=106");
+            exit();  
+ 
 	}
 	
 	// Display OK message
-	$display .= $LANG_RMANAGER_UPLUGIN[105];
+        header("Location: index.php?msg=105");
+        exit(); 
 	
     }
     else if ( (isset($_GET['ret'])) and ($_GET['ret'] == 5)) {
@@ -446,12 +473,8 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[101]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();    
+            header("Location: index.php?msg=101");
+            exit(); 
 	}
 	
 	// Run DB query, get information
@@ -461,33 +484,26 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// If the plugin doesn't exist, raise error
 	if ($result2 === FALSE) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[102]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();  	
+            header("Location: index.php?msg=102");
+            exit(); 
 	}
 	
 	// Change Database Flag
 	DB_query("UPDATE {$tblname} SET moderation = 0 WHERE id = '{$id}';");
 	
 	// Make up file path
-	$fpath = "../../../rmanager/tmp_uploads/patches/".$result2['name'].'_'.$result2['version'].'_'.$result2['applies_num'].'_'.$result2['id'].$result2['ext'];
-	$npath = "../../../repository/patches/".$result2['name'].'_'.$result2['version'].'_'.$result2['applies_num'].'_'.$result2['id'].$result2['ext'];
+	$fpath = "../../../repository/tmp_uploads/patches/".$result2['name'].'_'.$result2['version'].'_'.$result2['applies_num'].'_'.$result2['id'].$result2['ext'];
+	$npath = "../../../repository/main/patches/".$result2['name'].'_'.$result2['version'].'_'.$result2['applies_num'].'_'.$result2['id'].$result2['ext'];
 	
         // Move uploaded file 
 	if (!(rename($fpath,$npath))) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[31].$fpath); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();    
+            header("Location: index.php?msg=31");
+            exit(); 
 	}
 	
 	// Display OK message
-	$display .= $LANG_RMANAGER_UPLUGIN[109];
+        header("Location: index.php?msg=109");
+        exit(); 
 	
     }
     else if ( (isset($_GET['ret'])) and (($_GET['ret'] == 6) or ($_GET['ret'] == 10))) {
@@ -496,12 +512,8 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[101]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();    
+            header("Location: index.php?msg=101");
+            exit();   
 	}
 	
 	// Run DB query, get information
@@ -511,12 +523,8 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// If the plugin doesn't exist, raise error
 	if ($result2 === FALSE) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[102]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();  	
+            header("Location: index.php?msg=102");
+            exit(); 
 	}
 	
 	// Change Database Flag
@@ -524,24 +532,21 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// Make up file path
 	if ($_GET['ret'] == 6) {
-	    $fpath = "../../../rmanager/tmp_uploads/patches/".$result2['name'].'_'.$result2['version'].'_'.$result2['applies_num'].'_'.$result2['id'].$result2['ext'];
+	    $fpath = "../../../repository/tmp_uploads/patches/".$result2['name'].'_'.$result2['version'].'_'.$result2['applies_num'].'_'.$result2['id'].$result2['ext'];
 	}
 	else {
-	    $fpath = "../../../repository/patches/".$result2['name'].'_'.$result2['version'].'_'.$result2['applies_num'].'_'.$result2['id'].$result2['ext'];
+	    $fpath = "../../../repository/main/patches/".$result2['name'].'_'.$result2['version'].'_'.$result2['applies_num'].'_'.$result2['id'].$result2['ext'];
 	}
 	
         // Move uploaded file 
 	if (!(unlink($fpath))) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[108].$fpath); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();    
+            header("Location: index.php?msg=108");
+            exit(); 
 	}
 	
 	// Display OK message
-	$display .= $LANG_RMANAGER_UPLUGIN[107];
+        header("Location: index.php?msg=107");
+        exit(); 
 	
     }
     else if ( (isset($_GET['ret'])) and (($_GET['ret'] == 4) or ($_GET['ret'] == 9))) {
@@ -551,12 +556,8 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[101]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();    
+            header("Location: index.php?msg=101");
+            exit();   
 	}
 	
 	// Run DB query, get information
@@ -566,20 +567,16 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// If the plugin doesn't exist, raise error
 	if ($result2 === FALSE) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[102]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();  	
+            header("Location: index.php?msg=102");
+            exit(); 
 	}
 	
 	// Make up file path
 	if ($_GET['ret'] == 4) {
-	    $fpath = "../../../rmanager/tmp_uploads/patches/".$result2['name'].'_'.$result2['version'].'_'.$result2['applies_num'].'_'.$result2['id'].$result2['ext'];
+	    $fpath = "../../../repository/tmp_uploads/patches/".$result2['name'].'_'.$result2['version'].'_'.$result2['applies_num'].'_'.$result2['id'].$result2['ext'];
 	}
 	else {
-	    $fpath = "../../../repository/patches/".$result2['name'].'_'.$result2['version'].'_'.$result2['applies_num'].'_'.$result2['id'].$result2['ext'];
+	    $fpath = "../../../repository/main/patches/".$result2['name'].'_'.$result2['version'].'_'.$result2['applies_num'].'_'.$result2['id'].$result2['ext'];
 	}
 	// Set it for downloading
 	header("Location: $fpath");
@@ -590,12 +587,8 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
         $id = (int)( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 
         if ( ($username === FALSE) or ($id == 0)) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[120]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();  		
+            header("Location: index.php?msg=120");
+            exit(); 		
 	}
 	
 	// Does the username even exist?
@@ -606,12 +599,8 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// Do they exist?
 	if ($result2 === FALSE) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[121]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();	    
+            header("Location: index.php?msg=121");
+            exit();     
 	}
 	
 	$uid = $result2['uid'];
@@ -623,23 +612,20 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	$result2 = DB_fetchArray($result);
 	
 	if ($result2 !== FALSE) {
-            $display = COM_siteHeader('');
-            $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[123]); 
-            $display .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-            $display .= COM_siteFooter();
-            COM_output($display);
-            exit();		
+            header("Location: index.php?msg=123");
+            exit(); 
 	}
 
         // Insert into maintainer table the plugin id and the user id
 	DB_query("INSERT INTO {$tblname}(plugin_id, maintainer_id) VALUES({$id}, {$uid});");
 	
-	$display .= $LANG_RMANAGER_UPLUGIN[122];
+        header("Location: index.php?msg=122");
+        exit(); 
     }    
 }
 else {
     // Show link page
-    $data = new Template($_CONF['path'].'plugins/rmanager/templates');
+    $data = new Template($_CONF['path'].'plugins/repository/templates');
     $data->set_file(array('index'=>'adminindex.thtml'));
     $data->set_var('lang_94', $LANG_RMANAGER_UPLUGIN[94]);
     $data->set_var('lang_115', $LANG_RMANAGER_UPLUGIN[115]);

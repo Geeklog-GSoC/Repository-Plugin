@@ -45,7 +45,7 @@ function chk_uploadplugin()
       // Get textarea short discussion
       field = document.getElementById("GEEKLOG_SHRTDES").value;
       
-      if ((field > 200) || (field < 3)) {
+      if ((field > 100) || (field < 3)) {
           msg += "<br />"+LANG_PLUPLOAD_MSG3;
       }
 
