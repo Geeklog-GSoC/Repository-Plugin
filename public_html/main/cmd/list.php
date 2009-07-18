@@ -42,12 +42,12 @@ echo <<<XML
 <repository
 xmlns="http://www.geeklog.com"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.geeklog.com ../../rmanager/xml/repository_listing.xsd">
+xsi:schemaLocation="http://www.geeklog.com ../../xml/repository_listing.xsd">
 <!-- Start Plugin List -->
 XML;
 
 // Create query, lets go
-$tblname = $_DB_table_prefix.'repository_listing';
+$tblname = $_TABLES['repository_listing'];
 $qstr = "SELECT * FROM {$tblname} WHERE moderation = '0';";
 
 $result = DB_query($qstr);
@@ -57,19 +57,19 @@ while ( ($result2 = DB_fetchArray($result)) !== FALSE) {
 echo <<<EEPROM
 <plugin>
 <id>{$result2['id']}</id>
-<name>{$result2['name']}</name>
-<fname>{$result2['fname']}</fname>
-<version>{$result2['version']}</version>
-<db>{$result2['db']}</db>
-<dependencies>{$result2['dependencies']}</dependencies>
-<soft_dep>{$result2['soft_dep']}</soft_dep>
-<short_des>{$result2['short_des']}</short_des>
-<credits>{$result2['credits']}</credits>
-<vett>{$result2['vett']}</vett>
-<downloads>{$result2['downloads']}</downloads>
-<install>{$result2['install']}</install>
-<state>{$result2['state']}</state>
-<ext>{$result2['ext']}</ext>
+<name><![CDATA[{$result2['name']}]]></name>
+<fname><![CDATA[{$result2['fname']}]]></fname>
+<version><![CDATA[{$result2['version']}]]></version>
+<db><![CDATA[{$result2['db']}]]></db>
+<dependencies><![CDATA[{$result2['dependencies']}]]></dependencies>
+<soft_dep><![CDATA[{$result2['soft_dep']}]]></soft_dep>
+<short_des><![CDATA[{$result2['short_des']}]]></short_des>
+<credits><![CDATA[{$result2['credits']}]]></credits>
+<vett><![CDATA[{$result2['vett']}]]></vett>
+<downloads><![CDATA[{$result2['downloads']}]]></downloads>
+<install><![CDATA[{$result2['install']}]]></install>
+<state><![CDATA[{$result2['state']}]]></state>
+<ext><![CDATA[{$result2['ext']}]]></ext>
 </plugin>
 EEPROM;
 }

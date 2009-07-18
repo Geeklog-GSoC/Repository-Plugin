@@ -61,7 +61,7 @@ if (isset($_GET['cmd'])) {
 	// Check for patches
         $array_of_idv = unserialize(stripslashes($list_of_idv)); // Need to strip the slashes out to account for url encoding
 
-        $tblname = $_DB_table_prefix.'repository_patches';
+        $tblname = $_TABLES['repository_patches'];
         foreach ($array_of_idv as $id => $other_array) {
             // Get patches for that id, 
             $id2 = (int) $id;
@@ -89,7 +89,7 @@ if (isset($_GET['cmd'])) {
         }
 	
         // Now check for upgrades
-        $tblname = $_DB_table_prefix.'repository_upgrade';
+        $tblname = $_TABLES['repository_upgrade'];
         foreach ($array_of_idv as $id => $other_array) {
             // Get patches for that id, 
             $id2 = (int) $id;
@@ -131,14 +131,14 @@ if (isset($_GET['cmd'])) {
 	
 	$arrpatch =  unserialize(stripslashes($list_of_idv));
 
-	$tblname = $_DB_table_prefix.'repository_patches';
+	$tblname = $_TABLES['repository_patches'];
 echo <<<COOSHY
 <?xml version="1.0"?>
 
 <repository
 xmlns="http://www.geeklog.com"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.geeklog.com patch_listing.xsd">
+xsi:schemaLocation="http://www.geeklog.com ../../xml/patch_listing.xsd">
 <!-- Start patch List -->
 COOSHY;
 	// Loop over each ID
@@ -153,15 +153,15 @@ COOSHY;
 echo <<<YUMMY
 <patch>
         <id>{$result2['id']}</id>
-        <name>{$result2['name']}</name>
+        <name><![CDATA[{$result2['name']}]]></name>
         <plugin_id>{$result2['plugin_id']}</plugin_id>
-        <applies_num>{$result2['applies_num']}</applies_num>
-        <version>{$result2['version']}</version>
-        <severity>{$result2['severity']}</severity>
+        <applies_num><![CDATA[{$result2['applies_num']}]]></applies_num>
+        <version><![CDATA[{$result2['version']}]]></version>
+        <severity><![CDATA[{$result2['severity']}]]></severity>
         <automatic_install>{$result2['automatic_install']}</automatic_install>
-        <ext>{$result2['ext']}</ext>
-        <description>{$result2['description']}</description>
-        <update_number>{$result2['update_number']}</update_number>
+        <ext><![CDATA[{$result2['ext']}]]></ext>
+        <description><![CDATA[{$result2['description']}]]></description>
+        <update_number><![CDATA[{$result2['update_number']}]]></update_number>
 </patch>
 YUMMY;
                      continue;
@@ -174,15 +174,15 @@ YUMMY;
 echo <<<YUMMY
 <patch>
         <id>{$result2['id']}</id>
-        <name>{$result2['name']}</name>
+        <name><![CDATA[{$result2['name']}]]></name>
         <plugin_id>{$result2['plugin_id']}</plugin_id>
-        <applies_num>{$result2['applies_num']}</applies_num>
-        <version>{$result2['version']}</version>
-        <severity>{$result2['severity']}</severity>
+        <applies_num><![CDATA[{$result2['applies_num']}]]></applies_num>
+        <version><![CDATA[{$result2['version']}]]></version>
+        <severity><![CDATA[{$result2['severity']}]]></severity>
         <automatic_install>{$result2['automatic_install']}</automatic_install>
-        <ext>{$result2['ext']}</ext>
-        <description>{$result2['description']}</description>
-        <update_number>{$result2['update_number']}</update_number>
+        <ext><![CDATA[{$result2['ext']}]]></ext>
+        <description><![CDATA[{$result2['description']}]]></description>
+        <update_number><![CDATA[{$result2['update_number']}]]></update_number>
 </patch>
 YUMMY;
                  }
@@ -192,7 +192,7 @@ YUMMY;
         
         // Upgrade information now
         // We need to get all upgrades available for each plugin_id
-        $tblname = $_DB_table_prefix.'repository_upgrade';
+        $tblname = $_TABLES['repository_upgrade'];
         foreach ($arrpatch as $id => $other_array) {
             // Get patches for that id, 
             $id2 = (int) $id;
@@ -203,7 +203,7 @@ YUMMY;
                 // Is current version less than than offered for upgrade
                 if (version_compare($result2['version'], $other_array[0], 'eq') === TRUE) {
                     // Get plugin name for plugin id
-                    $tblname = $_DB_table_prefix.'repository_listing';
+                    $tblname = $_TABLES['repository_listing'];
                     $result4 = DB_query("SELECT name FROM {$tblname} WHERE id = {$id2};");
                     
                     $result5 = DB_fetchArray($result4);
@@ -214,8 +214,8 @@ YUMMY;
                  
                     echo <<<UPGRADE
 <upgrade>
-        <upgrade_version>{$result2['version']}</upgrade_version>
-        <upgrade_name>{$result5['name']}</upgrade_name>
+        <upgrade_version><![CDATA[{$result2['version']}]]></upgrade_version>
+        <upgrade_name><![CDATA[{$result5['name']}]]></upgrade_name>
 </upgrade>                    
 UPGRADE;
                 }

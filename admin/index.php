@@ -89,7 +89,7 @@ else if ($_GET['tmsg']) {
 }
 
 // Ensure user even has the rights to access this page
-if (!SEC_hasRights('repository.manage')) {
+if (!SEC_hasRights('repository')) {
     $display .= COM_siteHeader('menu', $MESSAGE[30])
              . COM_showMessageText($MESSAGE[29], $MESSAGE[30])
              . COM_siteFooter();
@@ -105,7 +105,7 @@ if (!SEC_hasRights('repository.manage')) {
 $display .= COM_siteHeader('');
 $glib = "";
 // Are there any plugins to moderate? Lets get that information 
-$tblname = $_DB_table_prefix.'repository_listing';
+$tblname = $_TABLES['repository_listing'];
 $result = DB_query("SELECT count(id) FROM {$tblname} WHERE moderation = '1';");
 $result2 = DB_fetchArray($result);
 $count_plugins = (int) $result2['count(id)'];
@@ -116,7 +116,7 @@ if ($count_plugins > 0) {
 }
 
 // How about patches
-$tblname = $_DB_table_prefix.'repository_patches';
+$tblname = $_TABLES['repository_patches'];
 $result = DB_query("SELECT count(id) FROM {$tblname} WHERE moderation = '1';");
 $result2 = DB_fetchArray($result);
 $count_patches = (int) $result2['count(id)'];
@@ -141,7 +141,7 @@ if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 1)) {
     $data->set_var('lang_100', $LANG_RMANAGER_UPLUGIN[100]);
     
     // Get data from table, loop and output information
-    $tblname = $_DB_table_prefix.'repository_listing';
+    $tblname = $_TABLES['repository_listing'];
     $result = DB_query("SELECT id, name, version FROM {$tblname} WHERE moderation = '1';");
     $ds2 = "";
     
@@ -172,7 +172,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 2)) {
     $data->set_var('lang_100', $LANG_RMANAGER_UPLUGIN[100]);
     
     // Get data from table, loop and output information
-    $tblname = $_DB_table_prefix.'repository_patches';
+    $tblname = $_TABLES['repository_patches'];
     $result = DB_query("SELECT id, name, version,applies_num,plugin_id FROM {$tblname} WHERE moderation = '1';");
     $ds2 = "";
     
@@ -203,7 +203,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 3)) {
     $data->set_var('lang_131', $LANG_RMANAGER_UPLUGIN[131]);
      
     // Get data from table, loop and output information
-    $tblname = $_DB_table_prefix.'repository_listing';
+    $tblname = $_TABLES['repository_listing'];
     
     // First its time to check for a search phrase
     if (isset($_POST['GEEKLOG_SEARCH'])) {
@@ -254,7 +254,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 4)) {
     $data->set_var('lang_100', $LANG_RMANAGER_UPLUGIN[100]);
     
     // Get data from table, loop and output information
-    $tblname = $_DB_table_prefix.'repository_patches';
+    $tblname = $_TABLES['repository_patches'];
     
     // Search by name or version
     if (isset($_POST['GEEKLOG_SEARCH'])) {
@@ -348,7 +348,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
     if ( (isset($_GET['ret'])) and (($_GET['ret'] == 1) or ($_GET['ret'] == 7))) {
         // Download copy of plugin
 	// First thing is get all plugin data from the database, so we can make up the file name
-	$tblname = $_DB_table_prefix.'repository_listing';
+	$tblname = $_TABLES['repository_listing'];
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
@@ -380,7 +380,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
     }
     else if ( (isset($_GET['ret'])) and ($_GET['ret'] == 2)) {
         // Approve Patch (Just move it), update DB
-	$tblname = $_DB_table_prefix.'repository_listing';
+	$tblname = $_TABLES['repository_listing'];
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
@@ -423,7 +423,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
     }
     else if ( (isset($_GET['ret'])) and (($_GET['ret'] == 3) or ($_GET['ret'] == 8))) {
         // Delete Plugin :D
-	$tblname = $_DB_table_prefix.'repository_listing';
+	$tblname = $_TABLES['repository_listing'];
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
@@ -469,7 +469,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
     }
     else if ( (isset($_GET['ret'])) and ($_GET['ret'] == 5)) {
         // Approve Patch :D
-	$tblname = $_DB_table_prefix.'repository_patches';
+	$tblname = $_TABLES['repository_patches'];
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
@@ -508,7 +508,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
     }
     else if ( (isset($_GET['ret'])) and (($_GET['ret'] == 6) or ($_GET['ret'] == 10))) {
         // Delete Patch :D
-	$tblname = $_DB_table_prefix.'repository_patches';
+	$tblname = $_TABLES['repository_patches'];
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
@@ -552,7 +552,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
     else if ( (isset($_GET['ret'])) and (($_GET['ret'] == 4) or ($_GET['ret'] == 9))) {
         // Download copy of patch
 	// First thing is get all patch data from the database, so we can make up the file name
-	$tblname = $_DB_table_prefix.'repository_patches';
+	$tblname = $_TABLES['repository_patches'];
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
@@ -593,7 +593,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// Does the username even exist?
 	$uname = COM_applyFilter($username);
-	$tblname = $_DB_table_prefix."users";
+	$tblname = $_TABLES["users"];
 	$result = DB_query("SELECT uid FROM {$tblname} WHERE username = '{$uname}';");
 	$result2 = DB_fetchArray($result);
 	
@@ -606,7 +606,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	$uid = $result2['uid'];
 	
 	// Are they already a maintainer?
-	$tblname = $_DB_table_prefix."repository_maintainers";
+	$tblname = $_TABLES["repository_maintainers"];
 	$result = DB_query("SELECT * FROM {$tblname} WHERE maintainer_id = {$uid} AND plugin_id = {$id};");
 	
 	$result2 = DB_fetchArray($result);

@@ -172,7 +172,8 @@ $LANG_RMANAGER = array(
     133 => 'Error: Invalid Plugin ID',
     134 => 'Error: You are not authorized to delete this plugin from the repository',
     135 => 'Error: Cannot remove plugin file from repository. Please do so manually.<br />File is: %s',
-    136 => 'Invalid Page Request - Please try again'
+    136 => 'Invalid Page Request - Please try again',
+    137 => 'Repository Manager'
 
  );
 
@@ -191,10 +192,10 @@ $LANG_RMANAGER = array(
      3 => ' patch(es) waiting for approval! (Click to load)'
  );
  
-$LANG_configselects['rmanager'] = array(
+$LANG_configselects['repository'] = array(
     0 => array('True' => 1, 'False' => 0),
     1 => array('True' => TRUE, 'False' => FALSE),
-    9 => array('Plugin must be approved' => 'rmanager_moderated'),
+    9 => array('Plugin must be approved' => 'repository_moderated', 'Maximum file size for a patch (MB) - Value must include M after integer' => 'max_pluginpatch_upload'),
     12 => array('No access' => 0, 'Read-Only' => 2, 'Read-Write' => 3)
 );
 

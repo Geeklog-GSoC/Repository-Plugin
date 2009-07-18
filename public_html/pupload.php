@@ -30,7 +30,7 @@
 // +---------------------------------------------------------------------------+
 
 require_once '../lib-common.php';
-
+ini_set('upload_max_filesize', $_CONF['max_pluginpatch_upload']); 
 /**
 * Displays a message on the webpage according to the tmsg standard ($msg contains array key for $MESSAGE array, remaining GET parameters contain sprintf 
 * data
@@ -110,11 +110,6 @@ else if ($_GET['tmsg']) {
     $display .= ShowTMessageRManager((int)$_GET['tmsg']);
 }
 
-#DEBUG VARIABLE later in config file. set at 2MB
-define("MAX_FILE_UPLOAD_SIZE", 2000000); 
-// Are plugins moderated or not
-$plugin_moderated = $_CONF['repository_moderated'];
-
 // So if the user got this far they are logged in, which is great
 
 // What command do we have now?
@@ -171,7 +166,7 @@ if (isset($_GET['cmd'])) {
         $data = new Template($_CONF['path'].'plugins/repository/templates');
 	$data->set_file(array('index'=>'listplugins.thtml'));
         
-        $tblname = $_DB_table_prefix.'repository_maintainers';
+        $tblname = $_TABLES['repository_maintainers'];
         // Lets get the list of plugin ids from the db that work with the client id
         $result = DB_query("SELECT plugin_id FROM {$tblname} WHERE maintainer_id = '{$_USER['uid']}';");
         $array_of_plugins = array();        
@@ -184,7 +179,7 @@ if (isset($_GET['cmd'])) {
         $string_of_maintainer_code = "";
 
         // Get the plugins that match those ID's - These are the maintainer plugins
-        $tblname = $_DB_table_prefix.'repository_listing';
+        $tblname = $_TABLES['repository_listing'];
         foreach ($array_of_plugins as $value) {
             $result = DB_query("SELECT name FROM {$tblname} WHERE id = '{$value}';");
             $result2 = DB_fetchArray($result);
@@ -240,7 +235,7 @@ if (isset($_GET['cmd'])) {
         }
 
         // Get the author ID associated with that plugin id, make sure they match 
-        $tblname = $_DB_table_prefix.'repository_listing';
+        $tblname = $_TABLES['repository_listing'];
         $result = DB_query("SELECT state,uploading_author,name,version,id,ext FROM {$tblname} WHERE id = '{$p_id}';");
         $author_id = DB_fetchArray($result);
         
@@ -287,7 +282,7 @@ if (isset($_GET['cmd'])) {
         }
 
         // Get the data for this plugin
-        $tblname = $_DB_table_prefix.'repository_listing';
+        $tblname = $_TABLES['repository_listing'];
         $result = DB_query("SELECT * FROM {$tblname} WHERE id = '{$p_id}';");
         $row = DB_fetchArray($result);
         
@@ -462,7 +457,7 @@ else if (isset($_GET['ret'])) {
             }
             
            // Check if a plugin of the same name exists in the repository
-	   $tblname = $_DB_table_prefix.'repository_listing';
+	   $tblname = $_TABLES['repository_listing'];
            $result = DB_query("SELECT name FROM {$tblname} WHERE name = '{$name}';");
    
            // Get result, or if null, the plugin can be uploaded since it won't exist
@@ -474,7 +469,7 @@ else if (isset($_GET['ret'])) {
            }
 	   
 	   // Is the file size too large (MAX_UPLOADED_FILE_SIZE)
-	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > MAX_FILE_UPLOAD_SIZE) {
+	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > $_CONF['max_pluginpatch_upload']) {
                 header("Location: pupload.php?cmd=1&msg=30");
                 exit();
 	   }
@@ -639,11 +634,11 @@ else if (isset($_GET['ret'])) {
            $fname = COM_applyFilter($fname);
 	  
 	   // Send query to the database
-           $tblname = $_DB_table_prefix.'repository_listing';
+           $tblname = $_TABLES['repository_listing'];
 	   // This type of string format needs to be against the 'wall' and not indented for it to work -- 
 $qstr = <<<HETERO
 INSERT INTO {$tblname}(ext, name, version, db, dependencies, soft_dep, short_des, credits, uploading_author, install, state, moderation, fname) 
-VALUES('{$full_ext}', '{$name}','{$version}','{$database_bit_value}','{$dependencies}','{$sys_dependencies}','{$shrt_des}','{$credits}','{$_USER['uid']}','{$automatic_installer}','{$state}', '{$plugin_moderated}', '{$fname}');
+VALUES('{$full_ext}', '{$name}','{$version}','{$database_bit_value}','{$dependencies}','{$sys_dependencies}','{$shrt_des}','{$credits}','{$_USER['uid']}','{$automatic_installer}','{$state}', '{$_CONF['repository_moderated']}', '{$fname}');
 HETERO;
 
            $result = DB_query($qstr);
@@ -653,7 +648,7 @@ HETERO;
            // Continue with the upload, if the user figured in error, he can update the plugin later when the message says he can
            // Time to move the file over to the repository directory
 	   // The upload path can either be the tmp upload or the real repository
-	   if ($plugin_moderated === 1) {
+	   if ($_CONF['repository_moderated'] === 1) {
 	       $output_repository = "tmp_uploads/".$name.'_'.$version.'_'.$state.'_'.$MYSQL_ID.$full_ext;  
 	   }
 	   else {
@@ -679,7 +674,7 @@ HETERO;
 	   
 	   // Since everything has succeeded successfully, display any files that should be included, exit
            $display = COM_siteHeader('');
-	   if ($plugin_moderated == TRUE) {
+	   if ($_CONF['repository_moderated'] == TRUE) {
                $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;        
 	   }
 	   else {
@@ -713,7 +708,7 @@ HETERO;
 	        // Move the new file to overwrite the existing one
 		
 		// Is the file size too large (MAX_UPLOADED_FILE_SIZE)
-	        if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > MAX_FILE_UPLOAD_SIZE) {
+	        if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > $_CONF['max_pluginpatch_upload']) {
                 header("Location: pupload.php?cmd=2&msg=30");
                 exit();    
 	        }
@@ -880,7 +875,7 @@ HETERO;
             $fname = COM_applyFilter($fname);
            
             // Send query to the database
-            $tblname = $_DB_table_prefix.'repository_listing';
+            $tblname = $_TABLES['repository_listing'];
 
             // Does the user have permissions for this plugin?
             // Check if author
@@ -888,7 +883,7 @@ HETERO;
             
             if (DB_fetchArray($result) === FALSE) {
                 // Is maintainer
-                $tbl2 = $_DB_table_prefix.'repository_maintainer';
+                $tbl2 = $_TABLES['repository_maintainer'];
                 $result = DB_query("SELECT * FROM {$tbl2} WHERE maintainer_id = {$_USER['uid']} AND plugin_id = {$id};");
                 if ($result === NULL) {
                     header("Location: pupload.php?cmd=2&msg=74");
@@ -898,7 +893,7 @@ HETERO;
            	  
 	    // This type of string format needs to be against the 'wall' and not indented for it to work -- 
 $qstr = <<<HETERO
-UPDATE {$tblname} SET ext = '{$full_ext}', name = '{$name}', version = '{$version}', db = '{$database_bit_value}', dependencies = '{$dependencies}', soft_dep = '{$sys_dependencies}', short_des = '{$shrt_des}', credits = '{$credits}', install = '{$automatic_installer}', state = '{$state}', fname = '{$fname}', moderation = '{$plugin_moderated}' WHERE id = '{$id}';
+UPDATE {$tblname} SET ext = '{$full_ext}', name = '{$name}', version = '{$version}', db = '{$database_bit_value}', dependencies = '{$dependencies}', soft_dep = '{$sys_dependencies}', short_des = '{$shrt_des}', credits = '{$credits}', install = '{$automatic_installer}', state = '{$state}', fname = '{$fname}', moderation = '{$_CONF['repository_moderated']}' WHERE id = '{$id}';
 HETERO;
 
             // Run Query
@@ -911,7 +906,7 @@ HETERO;
                 // Continue with the upload, if the user figured in error, he can update the plugin later when the message says he can
                 // Time to move the file over to the repository directory
                 // The upload path can either be the tmp upload or the real repository
-	        if ($plugin_moderated === 1) {
+	        if ($_CONF['repository_moderated'] === 1) {
 	            $output_repository = "tmp_uploads/".$name.'_'.$version.'_'.$state.'_'.$id.$full_ext;  
 	        }
 	        else {
@@ -943,7 +938,7 @@ HETERO;
 	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['error'] ===  UPLOAD_ERR_NO_FILE) {
 	       $display .= $LANG_RMANAGER_UPLUGIN[76];    
 	   }
-	   else if ($plugin_moderated == TRUE) {
+	   else if ($_CONF['repository_moderated'] == TRUE) {
                $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;               
 	   }
 
@@ -970,7 +965,7 @@ HETERO;
                 exit();
             }
             // Send query to the database
-            $tblname = $_DB_table_prefix.'repository_listing';
+            $tblname = $_TABLES['repository_listing'];
 
             // Does the user have permissions for this plugin?
             // Check if author
@@ -978,7 +973,7 @@ HETERO;
             
             if (DB_fetchArray($result) === FALSE) {
                 // Is maintainer
-                $tbl2 = $_DB_table_prefix.'repository_maintainer';
+                $tbl2 = $_TABLES['repository_maintainer'];
                 $result = DB_query("SELECT * FROM {$tbl2} WHERE maintainer_id = {$_USER['uid']} AND plugin_id = {$id};");
                 if ($result === NULL) {
                     header("Location: pupload.php?cmd=2&msg=74");
@@ -987,7 +982,7 @@ HETERO;
             }
 	    
            // Check if a patch of the same name exists in the repository
-	   $tblname = $_DB_table_prefix.'repository_patches';
+	   $tblname = $_TABLES['repository_patches'];
            $result = DB_query("SELECT name FROM {$tblname} WHERE name = '{$name}';");
    
            // Get result, or if null, the patch can be uploaded since it won't exist
@@ -999,7 +994,7 @@ HETERO;
            }
 	   
 	   // Is the file size too large (MAX_UPLOADED_FILE_SIZE)
-	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > MAX_FILE_UPLOAD_SIZE) {
+	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > $_CONF['max_pluginpatch_upload']) {
                 header("Location: pupload.php?cmd=2&msg=30");
                 exit();       
 	   }
@@ -1146,7 +1141,7 @@ HETERO;
            $severity = COM_applyFilter($severity);
 	   $des = COM_applyFilter($des);
 	   $update_number = 0;
-           $tblname = $_DB_table_prefix.'repository_patches';
+           $tblname = $_TABLES['repository_patches'];
            
            // Now get the update number for that plugin
            $result = DB_query("SELECT update_number FROM {$tblname} WHERE plugin_id = '{$id}';");
@@ -1163,7 +1158,7 @@ HETERO;
 	   // This type of string format needs to be against the 'wall' and not indented for it to work -- 
 $qstr = <<<HETERO
 INSERT INTO {$tblname}(name, plugin_id, uploading_author, applies_num, version, ext, severity, automatic_install, moderation, description, update_number) 
-VALUES('{$name}','{$id}','{$_USER['uid']}','{$vtype}','{$version}','{$full_ext}','{$severity}','{$automatic_installer}', '{$plugin_moderated}', '{$des}', '{$update_number}');
+VALUES('{$name}','{$id}','{$_USER['uid']}','{$vtype}','{$version}','{$full_ext}','{$severity}','{$automatic_installer}', '{$_CONF['repository_moderated']}', '{$des}', '{$update_number}');
 HETERO;
 
            $result = DB_query($qstr);
@@ -1173,7 +1168,7 @@ HETERO;
            // Continue with the upload, if the user figured in error, he can update the patch later when the message says he can
            // Time to move the file over to the repository directory
 	   // The upload path can either be the tmp upload or the real repository
-	   if ($plugin_moderated === 1) {
+	   if ($_CONF['repository_moderated'] === 1) {
 	       $output_repository = "tmp_uploads/patches/".$name.'_'.$version.'_'.$vtype.'_'.$MYSQL_ID.$full_ext;  
 	   }
 	   else {
@@ -1199,7 +1194,7 @@ HETERO;
 	   
 	   // Since everything has succeeded successfully, display any files that should be included, exit
            $display = COM_siteHeader('');
-	   if ($plugin_moderated == TRUE) {
+	   if ($_CONF['repository_moderated'] == TRUE) {
                $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;        
 	   }
 	   else {
@@ -1223,7 +1218,7 @@ HETERO;
             $version = COM_applyFilter($version);
 
            // Send query to the database
-           $tblname = $_DB_table_prefix.'repository_upgrade';
+           $tblname = $_TABLES['repository_upgrade'];
            // This type of string format needs to be against the 'wall' and not indented for it to work -- 
 $qstr = <<<HETERO
 INSERT INTO {$tblname}(plugin_id, version) VALUES('{$id}','{$version}');

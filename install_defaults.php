@@ -60,8 +60,10 @@ function plugin_initconfig_repository()
     if (!$c->group_exists('repository')) {
         $c->add('sg_main', NULL, 'subgroup', 0, 0, NULL, 0, true, 'repository');
         $c->add('fs_main', NULL, 'fieldset', 0, 0, NULL, 0, true, 'repository');
-        $c->add('repository_moderated', 0,
+        $c->add('repository_moderated', 1,
                 'select', 0, 0, 0, 10, true, 'repository');
+        $c->add('max_pluginpatch_upload', '2M',
+                'text', 0, 0, 0, 60, true, 'repository');
     }
 
     return true;

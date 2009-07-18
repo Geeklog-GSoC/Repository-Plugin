@@ -55,17 +55,14 @@ if (file_exists($langfile)) {
     require_once $plugin_path . 'language/english.php';
 }
 
-
-
-
-
-
-
-
-
-
-
-
+// Declare $_TABLE variable array
+// Plugin Repository 
+$_TABLES['repository_listing']                    = $_DB_table_prefix . 'repository_listing';
+$_TABLES['repository_patches']                    = $_DB_table_prefix . 'repository_patches';
+$_TABLES['repository_maintainers']                    = $_DB_table_prefix . 'repository_maintainers';
+$_TABLES['repository_upgrade']                    = $_DB_table_prefix . 'repository_upgrade';
+        
+// Name says all
 function plugin_getheadercode_repository()
 {
     global $_CONF;
@@ -78,5 +75,82 @@ function plugin_getheadercode_repository()
         . $_CONF['site_url'] . '/repository/main.js"></script>';
 	
     return $str;
+}
+
+/**
+* Returns the items for this plugin that should appear on the main menu & user menu
+*
+* NOTE: this MUST return the url/value pairs in the following format
+* $<arrayname>[<label>] = <url>
+*
+*/
+function plugin_getmenuitems_repository ()
+{
+    global $_CONF, $_USER, $LANG_RMANAGER_UPLUGIN;
+
+    $anon = (empty ($_USER['uid']) || ($_USER['uid'] <= 1)) ? true : false;
+
+    if ($anon) {
+        return false;
+    }
+    
+    $menuitems[$LANG_RMANAGER_UPLUGIN[137]] = $_CONF['site_url'] . '/repository/index.php';
+
+    return $menuitems;
+}
+
+function plugin_getuseroption_repository()
+{
+    global $_CONF, $LANG_RMANAGER_UPLUGIN;
+
+    $url = $_CONF['site_url'] . '/repository/index.php';
+    return array ($LANG_RMANAGER_UPLUGIN[137], $url, '');
+}
+
+/**
+* returns the administrative option for this plugin
+*
+*/
+function plugin_getadminoption_repository()
+{
+    global $_CONF, $_TABLES, $LANG_RMANAGER_UPLUGIN;
+
+    if (SEC_hasRights ('repository')) {
+ 
+        return array ($LANG_RMANAGER_UPLUGIN[137],
+                      $_CONF['site_admin_url'] . '/plugins/repository/index.php',
+                      0);
+    }
+}
+
+/**
+* This will put an option for the repository manager in the command and control block on
+* moderation.php
+*
+*/
+function plugin_cclabel_repository()
+{
+    global $_CONF, $LANG_RMANAGER_UPLUGIN;
+
+    if (SEC_hasRights ('repository')) {
+        return array ($LANG_RMANAGER_UPLUGIN[137],
+                $_CONF['site_admin_url'] . '/plugins/repository/index.php',
+                plugin_geticon_repository ());
+    }
+
+    return false;
+}
+
+/**
+* Returns the URL of the plugin's icon
+*
+* @return   string      URL of the icon
+*
+*/
+function plugin_geticon_repository ()
+{
+    global $_CONF;
+
+    return $_CONF['site_url'] . '/repository/images/repository.png';
 }
 
