@@ -30,7 +30,7 @@
 // +---------------------------------------------------------------------------+
 
 
-function plugin_autouninstall_rmanager ()
+function plugin_autouninstall_repository ()
 {
     $out = array (
         /* give the name of the tables, without $_TABLES[] */
