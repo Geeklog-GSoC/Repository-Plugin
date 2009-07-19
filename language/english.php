@@ -195,8 +195,22 @@ $LANG_RMANAGER = array(
 $LANG_configselects['repository'] = array(
     0 => array('True' => 1, 'False' => 0),
     1 => array('True' => TRUE, 'False' => FALSE),
-    9 => array('Plugin must be approved' => 'repository_moderated', 'Maximum file size for a patch (MB) - Value must include M after integer' => 'max_pluginpatch_upload'),
+    10 => array('Plugin must be approved' => 'repository_moderated', 'Maximum file size for a patch (MB) - Value must include M after integer' => 'max_pluginpatch_upload'),
     12 => array('No access' => 0, 'Read-Only' => 2, 'Read-Write' => 3)
+);
+
+$LANG_confignames['repository'] = array(
+    'repository_moderated' => 'Plugin must be approved before being available to public', 
+    'max_pluginpatch_upload' => 'Maximum file size for a patch (Bytes)'
+    );
+
+$LANG_configsubgroups['repository'] = array(
+    'sg_main' => 'Main Settings'
+);
+
+$LANG_fs['repository'] = array(
+    'fs_main' => 'General Repository Settings',
+    'fs_permissions' => 'Default Permissions'
 );
 
 ?>

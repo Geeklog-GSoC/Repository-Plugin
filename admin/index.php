@@ -36,6 +36,7 @@ require_once '../../../lib-common.php';
 require_once '../../auth.inc.php';
 
 $display = "";
+$display .= COM_siteHeader('');
 /**
 * Displays a message on the webpage according to the tmsg standard ($msg contains array key for $MESSAGE array, remaining GET parameters contain sprintf 
 * data
@@ -88,21 +89,6 @@ else if ($_GET['tmsg']) {
     $display .= ShowTMessageRManager((int)$_GET['tmsg']);
 }
 
-// Ensure user even has the rights to access this page
-if (!SEC_hasRights('repository')) {
-    $display .= COM_siteHeader('menu', $MESSAGE[30])
-             . COM_showMessageText($MESSAGE[29], $MESSAGE[30])
-             . COM_siteFooter();
-
-    // Log attempt to access.log
-    COM_accessLog("User {$_USER['username']} tried to illegally access the rmanager administration screen.");
-
-    COM_output($display);
-
-    exit;
-}
-
-$display .= COM_siteHeader('');
 $glib = "";
 // Are there any plugins to moderate? Lets get that information 
 $tblname = $_TABLES['repository_listing'];

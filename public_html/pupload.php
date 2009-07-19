@@ -30,7 +30,8 @@
 // +---------------------------------------------------------------------------+
 
 require_once '../lib-common.php';
-ini_set('upload_max_filesize', $_CONF['max_pluginpatch_upload']); 
+
+ini_set('upload_max_filesize', $_RM_CONF['max_pluginpatch_upload']); 
 /**
 * Displays a message on the webpage according to the tmsg standard ($msg contains array key for $MESSAGE array, remaining GET parameters contain sprintf 
 * data
@@ -469,8 +470,8 @@ else if (isset($_GET['ret'])) {
            }
 	   
 	   // Is the file size too large (MAX_UPLOADED_FILE_SIZE)
-	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > $_CONF['max_pluginpatch_upload']) {
-                header("Location: pupload.php?cmd=1&msg=30");
+	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > $_RM_CONF['max_pluginpatch_upload']) {
+                header("Location: pupload.php?cmd=1&msg=30&tr={$_RM_CONF['max_pluginpatch_upload']}@");
                 exit();
 	   }
 	   
@@ -638,7 +639,7 @@ else if (isset($_GET['ret'])) {
 	   // This type of string format needs to be against the 'wall' and not indented for it to work -- 
 $qstr = <<<HETERO
 INSERT INTO {$tblname}(ext, name, version, db, dependencies, soft_dep, short_des, credits, uploading_author, install, state, moderation, fname) 
-VALUES('{$full_ext}', '{$name}','{$version}','{$database_bit_value}','{$dependencies}','{$sys_dependencies}','{$shrt_des}','{$credits}','{$_USER['uid']}','{$automatic_installer}','{$state}', '{$_CONF['repository_moderated']}', '{$fname}');
+VALUES('{$full_ext}', '{$name}','{$version}','{$database_bit_value}','{$dependencies}','{$sys_dependencies}','{$shrt_des}','{$credits}','{$_USER['uid']}','{$automatic_installer}','{$state}', '{$_RM_CONF['repository_moderated']}', '{$fname}');
 HETERO;
 
            $result = DB_query($qstr);
@@ -648,7 +649,7 @@ HETERO;
            // Continue with the upload, if the user figured in error, he can update the plugin later when the message says he can
            // Time to move the file over to the repository directory
 	   // The upload path can either be the tmp upload or the real repository
-	   if ($_CONF['repository_moderated'] === 1) {
+	   if ($_RM_CONF['repository_moderated'] === 1) {
 	       $output_repository = "tmp_uploads/".$name.'_'.$version.'_'.$state.'_'.$MYSQL_ID.$full_ext;  
 	   }
 	   else {
@@ -674,7 +675,7 @@ HETERO;
 	   
 	   // Since everything has succeeded successfully, display any files that should be included, exit
            $display = COM_siteHeader('');
-	   if ($_CONF['repository_moderated'] == TRUE) {
+	   if ($_RM_CONF['repository_moderated'] == TRUE) {
                $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;        
 	   }
 	   else {
@@ -708,7 +709,7 @@ HETERO;
 	        // Move the new file to overwrite the existing one
 		
 		// Is the file size too large (MAX_UPLOADED_FILE_SIZE)
-	        if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > $_CONF['max_pluginpatch_upload']) {
+	        if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > $_RM_CONF['max_pluginpatch_upload']) {
                 header("Location: pupload.php?cmd=2&msg=30");
                 exit();    
 	        }
@@ -893,7 +894,7 @@ HETERO;
            	  
 	    // This type of string format needs to be against the 'wall' and not indented for it to work -- 
 $qstr = <<<HETERO
-UPDATE {$tblname} SET ext = '{$full_ext}', name = '{$name}', version = '{$version}', db = '{$database_bit_value}', dependencies = '{$dependencies}', soft_dep = '{$sys_dependencies}', short_des = '{$shrt_des}', credits = '{$credits}', install = '{$automatic_installer}', state = '{$state}', fname = '{$fname}', moderation = '{$_CONF['repository_moderated']}' WHERE id = '{$id}';
+UPDATE {$tblname} SET ext = '{$full_ext}', name = '{$name}', version = '{$version}', db = '{$database_bit_value}', dependencies = '{$dependencies}', soft_dep = '{$sys_dependencies}', short_des = '{$shrt_des}', credits = '{$credits}', install = '{$automatic_installer}', state = '{$state}', fname = '{$fname}', moderation = '{$_RM_CONF['repository_moderated']}' WHERE id = '{$id}';
 HETERO;
 
             // Run Query
@@ -906,7 +907,7 @@ HETERO;
                 // Continue with the upload, if the user figured in error, he can update the plugin later when the message says he can
                 // Time to move the file over to the repository directory
                 // The upload path can either be the tmp upload or the real repository
-	        if ($_CONF['repository_moderated'] === 1) {
+	        if ($_RM_CONF['repository_moderated'] === 1) {
 	            $output_repository = "tmp_uploads/".$name.'_'.$version.'_'.$state.'_'.$id.$full_ext;  
 	        }
 	        else {
@@ -938,7 +939,7 @@ HETERO;
 	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['error'] ===  UPLOAD_ERR_NO_FILE) {
 	       $display .= $LANG_RMANAGER_UPLUGIN[76];    
 	   }
-	   else if ($_CONF['repository_moderated'] == TRUE) {
+	   else if ($_RM_CONF['repository_moderated'] == TRUE) {
                $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;               
 	   }
 
@@ -994,7 +995,7 @@ HETERO;
            }
 	   
 	   // Is the file size too large (MAX_UPLOADED_FILE_SIZE)
-	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > $_CONF['max_pluginpatch_upload']) {
+	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > $_RM_CONF['max_pluginpatch_upload']) {
                 header("Location: pupload.php?cmd=2&msg=30");
                 exit();       
 	   }
@@ -1158,7 +1159,7 @@ HETERO;
 	   // This type of string format needs to be against the 'wall' and not indented for it to work -- 
 $qstr = <<<HETERO
 INSERT INTO {$tblname}(name, plugin_id, uploading_author, applies_num, version, ext, severity, automatic_install, moderation, description, update_number) 
-VALUES('{$name}','{$id}','{$_USER['uid']}','{$vtype}','{$version}','{$full_ext}','{$severity}','{$automatic_installer}', '{$_CONF['repository_moderated']}', '{$des}', '{$update_number}');
+VALUES('{$name}','{$id}','{$_USER['uid']}','{$vtype}','{$version}','{$full_ext}','{$severity}','{$automatic_installer}', '{$_RM_CONF['repository_moderated']}', '{$des}', '{$update_number}');
 HETERO;
 
            $result = DB_query($qstr);
@@ -1168,7 +1169,7 @@ HETERO;
            // Continue with the upload, if the user figured in error, he can update the patch later when the message says he can
            // Time to move the file over to the repository directory
 	   // The upload path can either be the tmp upload or the real repository
-	   if ($_CONF['repository_moderated'] === 1) {
+	   if ($_RM_CONF['repository_moderated'] === 1) {
 	       $output_repository = "tmp_uploads/patches/".$name.'_'.$version.'_'.$vtype.'_'.$MYSQL_ID.$full_ext;  
 	   }
 	   else {
@@ -1194,7 +1195,7 @@ HETERO;
 	   
 	   // Since everything has succeeded successfully, display any files that should be included, exit
            $display = COM_siteHeader('');
-	   if ($_CONF['repository_moderated'] == TRUE) {
+	   if ($_RM_CONF['repository_moderated'] == TRUE) {
                $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;        
 	   }
 	   else {

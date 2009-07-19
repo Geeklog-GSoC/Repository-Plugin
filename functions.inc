@@ -55,6 +55,16 @@ if (file_exists($langfile)) {
     require_once $plugin_path . 'language/english.php';
 }
 
+/*
+* Check and see if we need to load the plugin configuration
+*/
+if (!isset($_RM_CONF['repository_moderated'])) {
+    require_once $_CONF['path_system'] . 'classes/config.class.php';
+
+    $ca_config = config::get_instance();
+    $_RM_CONF = $ca_config->get_config('repository');
+}
+
 // Declare $_TABLE variable array
 // Plugin Repository 
 $_TABLES['repository_listing']                    = $_DB_table_prefix . 'repository_listing';
@@ -114,13 +124,10 @@ function plugin_getuseroption_repository()
 function plugin_getadminoption_repository()
 {
     global $_CONF, $_TABLES, $LANG_RMANAGER_UPLUGIN;
-
-    if (SEC_hasRights ('repository')) {
  
-        return array ($LANG_RMANAGER_UPLUGIN[137],
-                      $_CONF['site_admin_url'] . '/plugins/repository/index.php',
-                      0);
-    }
+    return array ($LANG_RMANAGER_UPLUGIN[137],
+                  $_CONF['site_admin_url'] . '/plugins/repository/index.php',
+                  0);
 }
 
 /**
@@ -132,11 +139,9 @@ function plugin_cclabel_repository()
 {
     global $_CONF, $LANG_RMANAGER_UPLUGIN;
 
-    if (SEC_hasRights ('repository')) {
-        return array ($LANG_RMANAGER_UPLUGIN[137],
-                $_CONF['site_admin_url'] . '/plugins/repository/index.php',
-                plugin_geticon_repository ());
-    }
+    return array ($LANG_RMANAGER_UPLUGIN[137],
+            $_CONF['site_admin_url'] . '/plugins/repository/index.php',
+            plugin_geticon_repository ());
 
     return false;
 }
