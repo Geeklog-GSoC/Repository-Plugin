@@ -87,7 +87,12 @@ CREATE TABLE {$tblname}
 (
     id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     plugin_id INT,
-    version VARCHAR(255)
+    version VARCHAR(255),
+    version2 VARCHAR(255),
+    description TEXT,
+    ext VARCHAR(100),
+    moderation TINYINT,
+    automatic_install TINYINT
 ) TYPE=MyISAM;
 ";
 

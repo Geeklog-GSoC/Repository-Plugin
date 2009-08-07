@@ -27,15 +27,15 @@ function chk_uploadplugin()
      // So check MySQL first, if no, check MSSQL, if no, check POSTGRE, if no, error
      field = document.getElementById("GEEKLOG_PLMYSQL").value;
      
-     if (field == "no") {
+     if (field == 0) {
          // Check MSSQL
 	 field = document.getElementById("GEEKLOG_PLMSSQL").value;
 	 
-	 if (field == "no") {
+	 if (field == 0) {
 	     // Check POSTGRE
 	     field = document.getElementById("GEEKLOG_PLPOSTGRE").value;
 	     
-	     if (field == "no") {
+	     if (field == 0) {
 	         // Error
 		 msg += "<br />"+LANG_PLUPLOAD_MSG2;
 	     }
@@ -66,4 +66,12 @@ function chk_uploadplugin()
    }
 
     return true;
+};
+
+// This function confirms that you wish to delete
+function delconfirm(path, msg)
+{
+    if(confirm(msg) == true) {
+        window.location = path;
+    }
 };

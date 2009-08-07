@@ -34,9 +34,20 @@
 */
 require_once '../../../lib-common.php';
 require_once '../../auth.inc.php';
+require_once $_CONF['path_system'] . 'lib-admin.php';
+
+if (!SEC_isModerator()) {
+    header("Location: ../../index.php");
+    exit;
+}
 
 $display = "";
 $display .= COM_siteHeader('');
+$MAIN_ARRAY_OF_LINKS = array($LANG_RMANAGER_UPLUGIN[115] => 'index.php?cmd=3', $LANG_RMANAGER_UPLUGIN[116] => 'index.php?cmd=4', $LANG_RMANAGER_UPLUGIN[150] => 'index.php?cmd=11');
+$SECOND_LINK_ARRAY = array ( array('url' => 'index.php?cmd=3', 'text' =>  $LANG_RMANAGER_UPLUGIN[115]), array('url' => 'index.php?cmd=4',
+                          'text' => $LANG_RMANAGER_UPLUGIN[116]), array('url' => 'index.php?cmd=11',
+                          'text' => $LANG_RMANAGER_UPLUGIN[150]) );
+
 /**
 * Displays a message on the webpage according to the tmsg standard ($msg contains array key for $MESSAGE array, remaining GET parameters contain sprintf 
 * data
@@ -89,7 +100,7 @@ else if ($_GET['tmsg']) {
     $display .= ShowTMessageRManager((int)$_GET['tmsg']);
 }
 
-$glib = "";
+$glib = array();
 // Are there any plugins to moderate? Lets get that information 
 $tblname = $_TABLES['repository_listing'];
 $result = DB_query("SELECT count(id) FROM {$tblname} WHERE moderation = '1';");
@@ -97,7 +108,7 @@ $result2 = DB_fetchArray($result);
 $count_plugins = (int) $result2['count(id)'];
 
 if ($count_plugins > 0) {
-    $glib .= '<a href="index.php?cmd=1">'.$LANG_RMANAGER_ADMIN[0].$count_plugins.$LANG_RMANAGER_ADMIN[1].'</a><br /><br />';
+    $glib[] = '<b><a href="index.php?cmd=1">'.$LANG_RMANAGER_ADMIN[0].$count_plugins.$LANG_RMANAGER_ADMIN[1].'</a></b>';
    
 }
 
@@ -108,7 +119,17 @@ $result2 = DB_fetchArray($result);
 $count_patches = (int) $result2['count(id)'];
 
 if ($count_patches > 0) {
-     $glib .= '<a href="index.php?cmd=2">'.$LANG_RMANAGER_ADMIN[2].$count_patches.$LANG_RMANAGER_ADMIN[3].'</a><br /><br />';
+     $glib[] = '<b><a href="index.php?cmd=2">'.$LANG_RMANAGER_ADMIN[0].$count_patches.$LANG_RMANAGER_ADMIN[3].'</a><b/>';
+}
+
+// How about upgrades
+$tblname = $_TABLES['repository_upgrade'];
+$result = DB_query("SELECT count(id) FROM {$tblname} WHERE moderation = '1';");
+$result2 = DB_fetchArray($result);
+$count_upgrade = (int) $result2['count(id)'];
+
+if ($count_upgrade > 0) {
+     $glib[] = '<b><a href="index.php?cmd=2">'.$LANG_RMANAGER_ADMIN[0].$count_upgrade.$LANG_RMANAGER_ADMIN[2].'</a><b/>';
 }
 
 
@@ -116,216 +137,395 @@ if ($count_patches > 0) {
 // Now we check for a GET parameter - if none, then we simply show them the main link page.
 if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 1)) {
     // Show  Moderate Plugins
-    // So show listing of all plugins that need to be moderated
-    $data = new Template($_CONF['path'].'plugins/repository/templates');
-    $data->set_file(array('index'=>'listmoderateplugins.thtml'));
-    $data->set_var('lang_95', $LANG_RMANAGER_UPLUGIN[95]);
-    $data->set_var('lang_96', $LANG_RMANAGER_UPLUGIN[96]);
-    $data->set_var('lang_97', $LANG_RMANAGER_UPLUGIN[97]);
-    $data->set_var('lang_98', $LANG_RMANAGER_UPLUGIN[98]);
-    $data->set_var('lang_99', $LANG_RMANAGER_UPLUGIN[99]);
-    $data->set_var('lang_100', $LANG_RMANAGER_UPLUGIN[100]);
+    $retval = '';
     
-    // Get data from table, loop and output information
-    $tblname = $_TABLES['repository_listing'];
-    $result = DB_query("SELECT id, name, version FROM {$tblname} WHERE moderation = '1';");
-    $ds2 = "";
-    
-    while ( ($result2 = DB_fetchArray($result)) !== FALSE) {
-$ds2 .= <<<EOM
-<tr>
-<td class='name'>{$result2['name']}</td><td class='type'>{$_USER['username']}</td><td class='opt'><a href="index.php?cmd=6&ret=1&pid={$result2['id']}">{$LANG_RMANAGER_UPLUGIN[96]}</a></td><td class='opt'<a href="index.php?cmd=6&ret=2&pid={$result2['id']}">{$LANG_RMANAGER_UPLUGIN[97]}</a></td><td class='opt'><a href="index.php?cmd=6&ret=3&pid={$result2['id']}">{$LANG_RMANAGER_UPLUGIN[98]}</a></td><td class='opt'></td>
-</tr>
-EOM;
-    }
-    
-    // Set to content
-    $data->set_var('value_1', $ds2);
-    $data->parse('output','index');
-    $display .= $data->finish($data->get_var('output'));   
+    // Set header data
+    $header_arr = array(      # display 'text' and use table field 'field'
+        array('text' => $LANG_RMANAGER_UPLUGIN[99], 'field' => 'name', 'sort' => true),
+        array('text' => $LANG_RMANAGER_UPLUGIN[100], 'field' => 'uploader', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[96], 'field' => 'download', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[97], 'field' => 'approve', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[98], 'field' => 'delete', 'sort' => false),
+    );
+
+    $defsort_arr = array('field' => 'name', 'direction' => 'asc');
+
+    $menu_arr = $SECOND_LINK_ARRAY;
+
+    $retval .= COM_startBlock($LANG_RMANAGER_UPLUGIN[95], '',
+                              COM_getBlockTemplate('_admin_block', 'header'));
+
+    $retval .= ADMIN_createMenu(
+        $menu_arr,
+        $LANG_RMANAGER_UPLUGIN[148],
+        $_CONF['layout_url'] . '/images/icons/plugins.' . $_IMAGE_TYPE
+    );
+
+    $text_arr = array(
+        'has_extras'   => true,
+        'instructions' => $LANG_RMANAGER_UPLUGIN[148],
+        'form_url'     => 'index.php?cmd=1'
+    );
+        
+    $query_arr = array(
+        'table' => 'repository_listing',
+        'sql' => "SELECT id, name, version, state, version, uploading_author, moderation FROM {$_TABLES['repository_listing']} WHERE moderation = '1' ",
+        'query_fields' => array('name'),
+        'default_filter' => ''
+    );
+
+    // this is a dummy variable so we know the form has been used if all plugins
+    // should be disabled in order to disable the last one.
+    $form_arr = array('bottom' => '<input type="hidden" name="pluginenabler" value="true"' . XHTML . '>');
+
+    $retval .= ADMIN_list('plugin_repository', 'ADMIN_getListField_listrepositorypl_plugins', $header_arr,
+                $text_arr, $query_arr, $defsort_arr, '', $token, '', $form_arr, false);
+                
+    $retval .= COM_endBlock(COM_getBlockTemplate('_admin_block', 'footer'));
+
+    $display .= $retval;    
     
 }
 else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 2)) {
-    // Show  Moderate Patches
-    // So show listing of all plugins that need to be moderated
-    $data = new Template($_CONF['path'].'plugins/repository/templates');
-    $data->set_file(array('index'=>'listmoderateplugins.thtml'));
-    $data->set_var('lang_95', $LANG_RMANAGER_UPLUGIN[110]);
-    $data->set_var('lang_96', $LANG_RMANAGER_UPLUGIN[96]);
-    $data->set_var('lang_97', $LANG_RMANAGER_UPLUGIN[97]);
-    $data->set_var('lang_98', $LANG_RMANAGER_UPLUGIN[98]);
-    $data->set_var('lang_99', $LANG_RMANAGER_UPLUGIN[99]);
-    $data->set_var('lang_100', $LANG_RMANAGER_UPLUGIN[100]);
+    // Show patches waiting for moderation call
+    $retval = '';
     
-    // Get data from table, loop and output information
-    $tblname = $_TABLES['repository_patches'];
-    $result = DB_query("SELECT id, name, version,applies_num,plugin_id FROM {$tblname} WHERE moderation = '1';");
-    $ds2 = "";
+    // Set header data
+    $header_arr = array(      # display 'text' and use table field 'field'
+        array('text' => $LANG_RMANAGER_UPLUGIN[99], 'field' => 'name', 'sort' => true),
+        array('text' => $LANG_RMANAGER_UPLUGIN[100], 'field' => 'uploader', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[96], 'field' => 'download', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[97], 'field' => 'approve', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[98], 'field' => 'delete', 'sort' => false)
+    );
+
+    $defsort_arr = array('field' => 'name', 'direction' => 'asc');
+
+    $menu_arr = $SECOND_LINK_ARRAY;
+
+    $retval .= COM_startBlock($LANG_RMANAGER_UPLUGIN[110], '',
+                              COM_getBlockTemplate('_admin_block', 'header'));
+
+    $retval .= ADMIN_createMenu(
+        $menu_arr,
+        $LANG_RMANAGER_UPLUGIN[148],
+        $_CONF['layout_url'] . '/images/icons/plugins.' . $_IMAGE_TYPE
+    );
+
+    $text_arr = array(
+        'has_extras'   => true,
+        'instructions' => $LANG_RMANAGER_UPLUGIN[148],
+        'form_url'     => 'index.php?cmd=2'
+    );
     
-    while ( ($result2 = DB_fetchArray($result)) !== FALSE) {
-$ds2 .= <<<EOM
-<tr>
-<td class='name'>{$result2['name']} {$result2['applies_num']} {$result2['version']} {$LANG_RMANAGER_UPLUGIN[103]} {$result2['plugin_id']}</td><td class='type'>{$_USER['username']}</td><td class='opt'><a href="index.php?cmd=6&ret=4&pid={$result2['id']}">{$LANG_RMANAGER_UPLUGIN[96]}</a></td><td class='opt'<a href="index.php?cmd=6&ret=5&pid={$result2['id']}">{$LANG_RMANAGER_UPLUGIN[97]}</a></td><td class='opt'><a href="index.php?cmd=6&ret=6&pid={$result2['id']}">{$LANG_RMANAGER_UPLUGIN[98]}</a></td><td class='opt'></td>
-</tr>
-EOM;
+    if (isset($_GET['pid'])) {
+        $plugin_id = (int) $_GET['pid'];
+        $qstr = "SELECT id, name, applies_num, version, plugin_id, uploading_author, moderation FROM {$_TABLES['repository_patches']} WHERE moderation = '1' AND plugin_id = '{$plugin_id}' ";
+    }
+    else {
+        $qstr = "SELECT id, name, applies_num, version, plugin_id, uploading_author, moderation FROM {$_TABLES['repository_patches']} WHERE moderation = '1' ";
     }
     
-    // Set to content
-    $data->set_var('value_1', $ds2);
-    $data->parse('output','index');
-    $display .= $data->finish($data->get_var('output'));   
+    $query_arr = array(
+        'table' => 'repository_patches',
+        'sql' => $qstr,
+        'query_fields' => array('name'),
+        'default_filter' => ''
+    );
+
+    // this is a dummy variable so we know the form has been used if all plugins
+    // should be disabled in order to disable the last one.
+    $form_arr = array('bottom' => '<input type="hidden" name="pluginenabler" value="true"' . XHTML . '>');
+
+    $retval .= ADMIN_list('plugin_repository', 'ADMIN_getListField_listrepositorypl_patches', $header_arr,
+                $text_arr, $query_arr, $defsort_arr, '', $token, '', $form_arr, false);
+                
+    $retval .= COM_endBlock(COM_getBlockTemplate('_admin_block', 'footer'));
+
+    $display .= $retval;     
+
+}
+else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 22)) {
+    // 
+    $retval = '';
+
+    // Set header data
+    $header_arr = array(      # display 'text' and use table field 'field'
+        array('text' => $LANG_RMANAGER_UPLUGIN[99], 'field' => 'name', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[96], 'field' => 'download', 'sort' => false), 
+        array('text' => $LANG_RMANAGER_UPLUGIN[97], 'field' => 'approve', 'sort' => false), 
+        array('text' => $LANG_RMANAGER_UPLUGIN[98], 'field' => 'delete', 'sort' => false)
+    );
+
+    $defsort_arr = array();
+
+    $menu_arr = $SECOND_LINK_ARRAY;
+
+    $retval .= COM_startBlock($LANG_RMANAGER_UPLUGIN[155], '',
+                              COM_getBlockTemplate('_admin_block', 'header'));
+
+    $retval .= ADMIN_createMenu(
+        $menu_arr,
+        $LANG_RMANAGER_UPLUGIN[148],
+        $_CONF['layout_url'] . '/images/icons/plugins.' . $_IMAGE_TYPE
+    );
+
+    $text_arr = array(
+        'has_extras'   => true,
+        'instructions' => $LANG_RMANAGER_UPLUGIN[148],
+        'form_url'     => 'index.php?cmd=22'
+    );
+
+    if (isset($_GET['pid'])) {
+        $plugin_id = (int) $_GET['pid'];
+        $qstr = "SELECT id, plugin_id, version, version2, moderation FROM {$_TABLES['repository_upgrade']} WHERE moderation = '1' AND plugin_id = '{$plugin_id}' ";
+    }
+    else {
+        $qstr = "SELECT id, plugin_id, version, version2, moderation FROM {$_TABLES['repository_upgrade']} WHERE moderation = '1' ";
+    }
     
+    $query_arr = array(
+        'table' => 'repository_upgrade',
+        'sql' => $qstr,
+        'query_fields' => array('name'),
+        'default_filter' => ''
+    );
+
+    // this is a dummy variable so we know the form has been used if all plugins
+    // should be disabled in order to disable the last one.
+    $form_arr = array('bottom' => '<input type="hidden" name="pluginenabler" value="true"' . XHTML . '>');
+
+    $retval .= ADMIN_list('plugin_repository', 'ADMIN_getListField_listrepositorypl_upgrade', $header_arr,
+                $text_arr, $query_arr, $defsort_arr, '', $token, '', $form_arr, false);
+                
+    $retval .= COM_endBlock(COM_getBlockTemplate('_admin_block', 'footer'));
+
+    $display .= $retval; 
+
 }
 else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 3)) {
     //  Show all plugins
-    $data = new Template($_CONF['path'].'plugins/repository/templates');
-    $data->set_file(array('index'=>'listmoderateplugins.thtml'));
-    $data->set_var('lang_95', $LANG_RMANAGER_UPLUGIN[112]);
-    $data->set_var('lang_96', $LANG_RMANAGER_UPLUGIN[96]);
-    $data->set_var('lang_97', $LANG_RMANAGER_UPLUGIN[111]);
-    $data->set_var('lang_98', $LANG_RMANAGER_UPLUGIN[98]);
-    $data->set_var('lang_99', $LANG_RMANAGER_UPLUGIN[99]);
-    $data->set_var('lang_100', $LANG_RMANAGER_UPLUGIN[100]);
-    $data->set_var('lang_131', $LANG_RMANAGER_UPLUGIN[131]);
-     
-    // Get data from table, loop and output information
-    $tblname = $_TABLES['repository_listing'];
     
-    // First its time to check for a search phrase
-    if (isset($_POST['GEEKLOG_SEARCH'])) {
-        $search = COM_applyFilter($_POST['GEEKLOG_SEARCH']);
-	$limit = (int) $_POST['GEEKLOG_LIMIT'];
-	$version = COM_applyFilter($_POST['GEEKLOG_VERSION']);
-	$result = DB_query("SELECT id, name, state, version FROM {$tblname} WHERE moderation = '0' AND name LIKE '%{$search}%' AND version LIKE '%{$version}%' LIMIT $limit;");
-    }
-    else
-    {    
-        $result = DB_query("SELECT id, name, state, version FROM {$tblname} WHERE moderation = '0';");
-    }
+    $retval = '';
     
-    $ds2 = "";
-    $i = 0;
-    
-    while ( ($result2 = DB_fetchArray($result)) !== FALSE) {
-$ds2 .= <<<EOM
-<tr>
-<td class='name'>{$result2['name']} {$result2['state']} {$result2['version']}</td><td class='type'>{$_USER['username']}</td><td class='opt'><a href="index.php?cmd=6&ret=7&pid={$result2['id']}">{$LANG_RMANAGER_UPLUGIN[96]}</a></td><td class='opt'<a href="index.php?cmd=5&pid={$result2['id']}">{$LANG_RMANAGER_UPLUGIN[111]}</a></td><td class='opt'><a href="index.php?cmd=6&ret=8&pid={$result2['id']}">{$LANG_RMANAGER_UPLUGIN[98]}</a></td><td class='opt'><a href="index.php?cmd=4&pid={$result2['id']}">{$LANG_RMANAGER_UPLUGIN[131]}</a></td>
-</tr>
-EOM;
-        $i++;
-    }
-    
-    // No plugins
-    if ($i == 0) {
-        $ds2 = $LANG_RMANAGER_UPLUGIN[113];
-    }
-    
-    // Set to content
-    $data->set_var('value_1', $ds2);
-    $data->parse('output','index');
-    $display .= $data->finish($data->get_var('output'));   
-    
+    // Set header data
+    $header_arr = array(      # display 'text' and use table field 'field'
+        array('text' => $LANG_RMANAGER_UPLUGIN[99], 'field' => 'name', 'sort' => true),
+        array('text' => $LANG_RMANAGER_UPLUGIN[100], 'field' => 'uploader', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[96], 'field' => 'download', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[111], 'field' => 'add_maintainer', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[98], 'field' => 'delete', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[131], 'field' => 'show_patches', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[151], 'field' => 'show_upgrades', 'sort' => false) // 151 is also a good tasting alcohol :)
+    );
+
+    $defsort_arr = array('field' => 'name', 'direction' => 'asc');
+
+    $menu_arr = $SECOND_LINK_ARRAY;
+
+    $retval .= COM_startBlock($LANG_RMANAGER_UPLUGIN[112], '',
+                              COM_getBlockTemplate('_admin_block', 'header'));
+
+    $retval .= ADMIN_createMenu(
+        $menu_arr,
+        $LANG_RMANAGER_UPLUGIN[148],
+        $_CONF['layout_url'] . '/images/icons/plugins.' . $_IMAGE_TYPE
+    );
+
+    $text_arr = array(
+        'has_extras'   => true,
+        'instructions' => $LANG_RMANAGER_UPLUGIN[148],
+        'form_url'     => 'index.php?cmd=3'
+    );
+        
+    $query_arr = array(
+        'table' => 'repository_listing',
+        'sql' => "SELECT id, name, version, state, version, uploading_author, moderation FROM {$_TABLES['repository_listing']} WHERE moderation = '0' ",
+        'query_fields' => array('name'),
+        'default_filter' => ''
+    );
+
+    // this is a dummy variable so we know the form has been used if all plugins
+    // should be disabled in order to disable the last one.
+    $form_arr = array('bottom' => '<input type="hidden" name="pluginenabler" value="true"' . XHTML . '>');
+
+    $retval .= ADMIN_list('plugin_repository', 'ADMIN_getListField_listrepositorypl_plugins', $header_arr,
+                $text_arr, $query_arr, $defsort_arr, '', $token, '', $form_arr, false);
+                
+    $retval .= COM_endBlock(COM_getBlockTemplate('_admin_block', 'footer'));
+
+    $display .= $retval;
     
 }
 else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 4)) {
     //  Show all patches
-    $data = new Template($_CONF['path'].'plugins/repository/templates');
-    $data->set_file(array('index'=>'listmoderateplugins.thtml'));
-    $data->set_var('lang_95', $LANG_RMANAGER_UPLUGIN[114]);
-    $data->set_var('lang_96', $LANG_RMANAGER_UPLUGIN[96]);
-    $data->set_var('lang_97', '');
-    $data->set_var('lang_131', '');
-    $data->set_var('lang_98', $LANG_RMANAGER_UPLUGIN[98]);
-    $data->set_var('lang_99', $LANG_RMANAGER_UPLUGIN[99]);
-    $data->set_var('lang_100', $LANG_RMANAGER_UPLUGIN[100]);
+   
     
-    // Get data from table, loop and output information
-    $tblname = $_TABLES['repository_patches'];
+    $retval = '';
     
-    // Search by name or version
-    if (isset($_POST['GEEKLOG_SEARCH'])) {
-        $search = COM_applyFilter($_POST['GEEKLOG_SEARCH']);
-	$limit = (int) $_POST['GEEKLOG_LIMIT'];
-	$version = COM_applyFilter($_POST['GEEKLOG_VERSION']);
-	$result = DB_query("SELECT id, name, applies_num, version, plugin_id FROM {$tblname} WHERE moderation = '0' AND name LIKE '%{$search}%' AND version LIKE '%{$version}%' LIMIT $limit;");
+    // Set header data
+    $header_arr = array(      # display 'text' and use table field 'field'
+        array('text' => $LANG_RMANAGER_UPLUGIN[99], 'field' => 'name', 'sort' => true),
+        array('text' => $LANG_RMANAGER_UPLUGIN[100], 'field' => 'uploader', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[96], 'field' => 'download', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[98], 'field' => 'delete', 'sort' => false)
+    );
+
+    $defsort_arr = array('field' => 'name', 'direction' => 'asc');
+
+    $menu_arr = $SECOND_LINK_ARRAY;
+
+    $retval .= COM_startBlock($LANG_RMANAGER_UPLUGIN[114], '',
+                              COM_getBlockTemplate('_admin_block', 'header'));
+
+    $retval .= ADMIN_createMenu(
+        $menu_arr,
+        $LANG_RMANAGER_UPLUGIN[148],
+        $_CONF['layout_url'] . '/images/icons/plugins.' . $_IMAGE_TYPE
+    );
+
+    $text_arr = array(
+        'has_extras'   => true,
+        'instructions' => $LANG_RMANAGER_UPLUGIN[148],
+        'form_url'     => 'index.php?cmd=4'
+    );
+    
+    if (isset($_GET['pid'])) {
+        $plugin_id = (int) $_GET['pid'];
+        $qstr = "SELECT id, name, applies_num, version, plugin_id, uploading_author, moderation FROM {$_TABLES['repository_patches']} WHERE moderation = '0' AND plugin_id = '{$plugin_id}' ";
     }
-    // Search by plugin id
-    else if (isset($_GET['pid'])) {
-        $pid = (int) $_GET['pid'];
-	
-	$result = DB_query("SELECT id, name, applies_num, version, plugin_id FROM {$tblname} WHERE moderation = '0' AND plugin_id = {$pid};");
-    }
-    else
-    {    
-        $result = DB_query("SELECT id, name, applies_num, version, plugin_id FROM {$tblname} WHERE moderation = '0';");
-    }
-    
-    $ds2 = "";
-    $i = 0;
-    
-    while ( ($result2 = DB_fetchArray($result)) !== FALSE) {
-$ds2 .= <<<EOM
-<tr>
-<td class='name'>{$result2['name']} {$result2['applies_num']} {$result2['version']} {$LANG_RMANAGER_UPLUGIN[103]} {$result2['plugin_id']}</td><td class='type'>{$_USER['username']}</td><td class='opt'><a href="index.php?cmd=6&ret=9&pid={$result2['id']}">{$LANG_RMANAGER_UPLUGIN[96]}</a></td><td class="opt"></td><td class='opt'<a href="index.php?cmd=6&ret=10&pid={$result2['id']}">{$LANG_RMANAGER_UPLUGIN[98]}</a></td><td class='opt'></td>
-</tr>
-EOM;
-        $i++;
+    else {
+        $qstr = "SELECT id, name, applies_num, version, plugin_id, uploading_author, moderation FROM {$_TABLES['repository_patches']} WHERE moderation = '0' ";
     }
     
-    // No plugins
-    if ($i == 0) {
-        $ds2 = $LANG_RMANAGER_UPLUGIN[113];
+    $query_arr = array(
+        'table' => 'repository_patches',
+        'sql' => $qstr,
+        'query_fields' => array('name'),
+        'default_filter' => ''
+    );
+
+    // this is a dummy variable so we know the form has been used if all plugins
+    // should be disabled in order to disable the last one.
+    $form_arr = array('bottom' => '<input type="hidden" name="pluginenabler" value="true"' . XHTML . '>');
+
+    $retval .= ADMIN_list('plugin_repository', 'ADMIN_getListField_listrepositorypl_patches', $header_arr,
+                $text_arr, $query_arr, $defsort_arr, '', $token, '', $form_arr, false);
+                
+    $retval .= COM_endBlock(COM_getBlockTemplate('_admin_block', 'footer'));
+
+    $display .= $retval; 
+}
+else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 11)) {
+    //  Show all upgrades
+   
+    
+    $retval = '';
+
+    // Set header data
+    $header_arr = array(      # display 'text' and use table field 'field'
+        array('text' => $LANG_RMANAGER_UPLUGIN[99], 'field' => 'name', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[96], 'field' => 'download', 'sort' => false), 
+        array('text' => $LANG_RMANAGER_UPLUGIN[98], 'field' => 'delete', 'sort' => false)
+    );
+
+    $defsort_arr = array();
+
+    $menu_arr = $SECOND_LINK_ARRAY;
+
+    $retval .= COM_startBlock($LANG_RMANAGER_UPLUGIN[149], '',
+                              COM_getBlockTemplate('_admin_block', 'header'));
+
+    $retval .= ADMIN_createMenu(
+        $menu_arr,
+        $LANG_RMANAGER_UPLUGIN[148],
+        $_CONF['layout_url'] . '/images/icons/plugins.' . $_IMAGE_TYPE
+    );
+
+    $text_arr = array(
+        'has_extras'   => true,
+        'instructions' => $LANG_RMANAGER_UPLUGIN[148],
+        'form_url'     => 'index.php?cmd=11'
+    );
+
+    if (isset($_GET['pid'])) {
+        $plugin_id = (int) $_GET['pid'];
+        $qstr = "SELECT id, plugin_id, version, version2, moderation FROM {$_TABLES['repository_upgrade']} WHERE moderation = '0' AND plugin_id = '{$plugin_id}' ";
+    }
+    else {
+        $qstr = "SELECT id, plugin_id, version, version2, moderation FROM {$_TABLES['repository_upgrade']} WHERE moderation = '0' ";
     }
     
-    // Set to content
-    $data->set_var('value_1', $ds2);
-    $data->parse('output','index');
-    $display .= $data->finish($data->get_var('output'));   
-    
+    $query_arr = array(
+        'table' => 'repository_upgrade',
+        'sql' => $qstr,
+        'query_fields' => array('name'),
+        'default_filter' => ''
+    );
+
+    // this is a dummy variable so we know the form has been used if all plugins
+    // should be disabled in order to disable the last one.
+    $form_arr = array('bottom' => '<input type="hidden" name="pluginenabler" value="true"' . XHTML . '>');
+
+    $retval .= ADMIN_list('plugin_repository', 'ADMIN_getListField_listrepositorypl_upgrade', $header_arr,
+                $text_arr, $query_arr, $defsort_arr, '', $token, '', $form_arr, false);
+                
+    $retval .= COM_endBlock(COM_getBlockTemplate('_admin_block', 'footer'));
+
+    $display .= $retval; 
 }
 else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 5)) {
-    // Show add maintainer
+    // Show add maintainer / delete maintainers
     $data = new Template($_CONF['path'].'plugins/repository/templates');
     $data->set_file(array('index'=>'maintainer.thtml'));
-    $data->set_var('lang_117', $LANG_RMANAGER_UPLUGIN[117]);
+    $data->set_var('store_0', tdisplay_formattedmessage(NULL, $LANG_RMANAGER_UPLUGIN[117], FALSE, TRUE, $MAIN_ARRAY_OF_LINKS));
     $data->set_var('lang_118', $LANG_RMANAGER_UPLUGIN[118]);
     $data->set_var('lang_119', $LANG_RMANAGER_UPLUGIN[119]);
+    $data->set_var('lang_152', $LANG_RMANAGER_UPLUGIN[152]);
     $data->set_var('value_0', (isset($_GET['pid'])) ? $_GET['pid'] : 0);
     $data->set_var('lang_17', $LANG_RMANAGER_UPLUGIN[17]);
     $data->parse('output','index');
     $display .= $data->finish($data->get_var('output'));   
     
+    $retval = '';
+
+    // Set header data
+    $header_arr = array(      # display 'text' and use table field 'field'
+        array('text' => $LANG01[21], 'field' => 'name', 'sort' => false),
+        array('text' => $LANG_RMANAGER_UPLUGIN[98], 'field' => 'delete', 'sort' => false)
+    );
+
+    $defsort_arr = array();
+
+    $retval .= COM_startBlock('', '',
+                              COM_getBlockTemplate('_admin_block', 'header'));
+
+    $text_arr = array(
+        'has_extras'   => false,
+        'instructions' => $LANG_RMANAGER_UPLUGIN[148],
+        'form_url'     => ''
+    );
+
+    $plugin_id = (int) $_GET['pid'];
+    $qstr = "SELECT maintainer_id, plugin_id FROM {$_TABLES['repository_maintainers']} WHERE plugin_id = '{$plugin_id}' ";
     
-}
-else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 7)) {
-    // Show search plugin
-    $data = new Template($_CONF['path'].'plugins/repository/templates');
-    $data->set_file(array('index'=>'search.thtml'));
-    $data->set_var('lang_124', $LANG_RMANAGER_UPLUGIN[124]);
-    $data->set_var('lang_125', $LANG_RMANAGER_UPLUGIN[125]);
-    $data->set_var('lang_126', $LANG_RMANAGER_UPLUGIN[126]);
-    $data->set_var('lang_127', $LANG_RMANAGER_UPLUGIN[127]);
-    $data->set_var('lang_129', $LANG_RMANAGER_UPLUGIN[129]);    
-    $data->set_var('lang_17', $LANG_RMANAGER_UPLUGIN[17]);
-    $data->set_var('value_0', 3);
-    $data->parse('output','index');
-    $display .= $data->finish($data->get_var('output'));   
-    
-    
-}
-else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 8)) {
-    // Show search patch
-    $data = new Template($_CONF['path'].'plugins/repository/templates');
-    $data->set_file(array('index'=>'search.thtml'));
-    $data->set_var('lang_124', $LANG_RMANAGER_UPLUGIN[130]);
-    $data->set_var('lang_125', $LANG_RMANAGER_UPLUGIN[125]);
-    $data->set_var('lang_126', $LANG_RMANAGER_UPLUGIN[126]);
-    $data->set_var('lang_127', $LANG_RMANAGER_UPLUGIN[127]);
-    $data->set_var('lang_129', $LANG_RMANAGER_UPLUGIN[129]);    
-    $data->set_var('lang_17', $LANG_RMANAGER_UPLUGIN[17]);
-    $data->set_var('value_0', 4);
-    $data->parse('output','index');
-    $display .= $data->finish($data->get_var('output'));   
+    $query_arr = array(
+        'table' => 'repository_upgrade',
+        'sql' => $qstr,
+        'query_fields' => array('maintainer_id'),
+        'default_filter' => ''
+    );
+
+    // this is a dummy variable so we know the form has been used if all plugins
+    // should be disabled in order to disable the last one.
+    $form_arr = array('bottom' => '<input type="hidden" name="pluginenabler" value="true"' . XHTML . '>');
+
+    $retval .= ADMIN_list('plugin_repository', 'ADMIN_getListField_listrepositorypl_maintainers', $header_arr,
+                $text_arr, $query_arr, $defsort_arr, '', $token, '', $form_arr, false);
+                
+    $retval .= COM_endBlock(COM_getBlockTemplate('_admin_block', 'footer'));
+
+    $display .= $retval;     
     
     
 }
@@ -338,7 +538,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
-            header("Location: index.php?msg=101");
+            header("Location: index.php?cmd=3&msg=101");
             exit();    
 	}
 	
@@ -349,7 +549,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// If the plugin doesn't exist, raise error
 	if ($result2 === FALSE) {
-            header("Location: index.php?msg=102");
+            header("Location: index.php?cmd=3&msg=102");
             exit();  
 	}
 	
@@ -365,12 +565,12 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	header("Location: $fpath");
     }
     else if ( (isset($_GET['ret'])) and ($_GET['ret'] == 2)) {
-        // Approve Patch (Just move it), update DB
+        // Approve Plugin (Just move it), update DB
 	$tblname = $_TABLES['repository_listing'];
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
-            header("Location: index.php?msg=101");
+            header("Location: index.php?cmd=3&msg=101");
             exit();  
    
 	}
@@ -382,7 +582,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// If the plugin doesn't exist, raise error
 	if ($result2 === FALSE) {
-            header("Location: index.php?msg=102");
+            header("Location: index.php?cmd=3&msg=102");
             exit();  
 
 	}
@@ -396,13 +596,13 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
         // Move uploaded file 
 	if (!(rename($fpath, $npath))) {
-            header("Location: index.php?msg=31");
+            header("Location: index.php?cmd=3&msg=31");
             exit();  
 
 	}
 	
 	// Display OK message
-        header("Location: index.php?msg=104");
+        header("Location: index.php?cmd=3&msg=104");
         exit();  
 
 	
@@ -413,7 +613,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
-            header("Location: index.php?msg=101");
+            header("Location: index.php?cmd=3&msg=101");
             exit();  
 
 	}
@@ -425,7 +625,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// If the plugin doesn't exist, raise error
 	if ($result2 === FALSE) {
-            header("Location: index.php?msg=102");
+            header("Location: index.php?cmd=3&msg=102");
             exit();  
 
 	}
@@ -443,13 +643,13 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
         // Move uploaded file 
 	if (!(unlink($fpath))) {
-            header("Location: index.php?msg=106");
+            header("Location: index.php?cmd=3&msg=106");
             exit();  
  
 	}
 	
 	// Display OK message
-        header("Location: index.php?msg=105");
+        header("Location: index.php?cmd=3&msg=105");
         exit(); 
 	
     }
@@ -459,7 +659,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
-            header("Location: index.php?msg=101");
+            header("Location: index.php?cmd=4&msg=101");
             exit(); 
 	}
 	
@@ -470,7 +670,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// If the plugin doesn't exist, raise error
 	if ($result2 === FALSE) {
-            header("Location: index.php?msg=102");
+            header("Location: index.php?cmd=4&msg=102");
             exit(); 
 	}
 	
@@ -483,12 +683,12 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
         // Move uploaded file 
 	if (!(rename($fpath,$npath))) {
-            header("Location: index.php?msg=31");
+            header("Location: index.php?cmd=4&msg=31");
             exit(); 
 	}
 	
 	// Display OK message
-        header("Location: index.php?msg=109");
+        header("Location: index.php?cmd=4&msg=109");
         exit(); 
 	
     }
@@ -498,7 +698,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
-            header("Location: index.php?msg=101");
+            header("Location: index.php?cmd=4&msg=101");
             exit();   
 	}
 	
@@ -509,7 +709,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// If the plugin doesn't exist, raise error
 	if ($result2 === FALSE) {
-            header("Location: index.php?msg=102");
+            header("Location: index.php?cmd=4&msg=102");
             exit(); 
 	}
 	
@@ -526,12 +726,12 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
         // Move uploaded file 
 	if (!(unlink($fpath))) {
-            header("Location: index.php?msg=108");
+            header("Location: index.php?cmd=4&msg=108");
             exit(); 
 	}
 	
 	// Display OK message
-        header("Location: index.php?msg=107");
+        header("Location: index.php?cmd=4&msg=107");
         exit(); 
 	
     }
@@ -542,7 +742,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	$id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 	
 	if ($id === 0) {
-            header("Location: index.php?msg=101");
+            header("Location: index.php?cmd=4&msg=101");
             exit();   
 	}
 	
@@ -553,7 +753,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// If the plugin doesn't exist, raise error
 	if ($result2 === FALSE) {
-            header("Location: index.php?msg=102");
+            header("Location: index.php?cmd=4&msg=102");
             exit(); 
 	}
 	
@@ -573,7 +773,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
         $id = (int)( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 
         if ( ($username === FALSE) or ($id == 0)) {
-            header("Location: index.php?msg=120");
+            header("Location: index.php?cmd=5&pid={$id}&msg=120");
             exit(); 		
 	}
 	
@@ -585,7 +785,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	
 	// Do they exist?
 	if ($result2 === FALSE) {
-            header("Location: index.php?msg=121");
+            header("Location: index.php?cmd=5&pid={$id}&msg=121");
             exit();     
 	}
 	
@@ -598,28 +798,159 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 6)) {
 	$result2 = DB_fetchArray($result);
 	
 	if ($result2 !== FALSE) {
-            header("Location: index.php?msg=123");
+            header("Location: index.php?cmd=5&pid={$id}&msg=123");
             exit(); 
 	}
 
         // Insert into maintainer table the plugin id and the user id
 	DB_query("INSERT INTO {$tblname}(plugin_id, maintainer_id) VALUES({$id}, {$uid});");
 	
-        header("Location: index.php?msg=122");
+        header("Location: index.php?cmd=5&pid={$id}&msg=122");
         exit(); 
-    }    
+    }
+    else if ((isset($_GET['ret'])) and ($_GET['ret'] == 14)) {
+        // Return from delete maintainer
+        // Two variables to catch, the plugin_id and the maintainer_id        
+        $mid = (int)( (isset($_GET['mid'])) ? $_GET['mid'] : 0);
+        $pid = (int)( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
+        
+        // Attempt to delete the maintainer with that name
+        DB_query("DELETE FROM {$_TABLES["repository_maintainers"]} WHERE maintainer_id = '{$mid}' AND plugin_id = '{$pid}';");
+        
+        header("Location: index.php?cmd=5&pid={$pid}&msg=153");
+        exit();
+    }
+    else if ( (isset($_GET['ret'])) and ($_GET['ret'] == 20)) {
+        // Approve Upgrade (Just move it), update DB
+        $tblname = $_TABLES['repository_upgrade'];
+        $id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
+        
+        if ($id === 0) {
+            header("Location: index.php?cmd=11&pid={$id}&msg=101");
+            exit();  
+   
+        }
+        
+        // Run DB query, get information
+        $result = DB_query("SELECT plugin_id, version, version2, ext FROM {$tblname} WHERE id = '{$id}';");
+        
+        $result2 = DB_fetchArray($result);
+        
+        // If the plugin doesn't exist, raise error
+        if ($result2 === FALSE) {
+            header("Location: index.php?cmd=11&pid={$id}&msg=102");
+            exit();  
+
+        }
+        
+        // Change Database Flag
+        DB_query("UPDATE {$tblname} SET moderation = 0 WHERE id = '{$id}';");
+
+        // Make up file path
+        $fpath = "../../../repository/tmp_uploads/upgrades/".$result2['version'].'_from_'.$result2['version2'].'_'.$result2['plugin_id'].'_'.$id.$result2['ext'];
+        $npath = "../../../repository/main/upgrades/".$result2['version'].'_from_'.$result2['version2'].'_'.$result2['plugin_id'].'_'.$id.$result2['ext'];
+        
+        // Move uploaded file 
+        if (!(rename($fpath, $npath))) {
+            header("Location: index.php?cmd=11&pid={$id}&msg=31");
+            exit();  
+
+        }
+        
+        // Display OK message
+        header("Location: index.php?cmd=11&pid={$id}&msg=154");
+        exit();  
+
+        
+    }
+    else if ( (isset($_GET['ret'])) and (($_GET['ret'] == 12) or ($_GET['ret'] == 21))) {
+        // Download copy of upgrade
+        // First thing is get all upgrade data from the database, so we can make up the file name
+        $tblname = $_TABLES['repository_upgrade'];
+        $id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
+        
+        if ($id === 0) {
+            header("Location: index.php?cmd=11&pid={$id}&msg=101");
+            exit();    
+        }
+        
+         // Run DB query, get information
+        $result = DB_query("SELECT plugin_id, version, version2, ext FROM {$tblname} WHERE id = '{$id}';");
+        
+        $result2 = DB_fetchArray($result);
+        
+        // If the plugin doesn't exist, raise error
+        if ($result2 === FALSE) {
+            header("Location: index.php?cmd=11&pid={$id}&msg=102");
+            exit();  
+
+        }
+        
+        // Make up file path
+        if ($_GET['cmd'] == 21) {
+            $fpath = "../../../repository/tmp_uploads/upgrades/".$result2['version'].'_from_'.$result2['version2'].'_'.$result2['plugin_id'].'_'.$id.$result2['ext'];
+        }
+        else {
+            $fpath = "../../../repository/main/upgrades/".$result2['version'].'_from_'.$result2['version2'].'_'.$result2['plugin_id'].'_'.$id.$result2['ext'];
+        }
+        
+        // Set it for downloading
+        header("Location: $fpath");
+    }
+    else if ( (isset($_GET['ret'])) and (($_GET['ret'] == 13) or ($_GET['ret'] == 23))) {
+        // Delete upgrade
+        // First thing is get all upgrade data from the database, so we can make up the file name
+        $tblname = $_TABLES['repository_upgrade'];
+        $id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
+        
+        if ($id === 0) {
+            header("Location: index.php?cmd=11&pid={$id}&msg=101");
+            exit();    
+        }
+        
+        // Run DB query, delete plugin
+        $result = DB_query("SELECT plugin_id, version, version2, ext FROM {$tblname} WHERE id = '{$id}';");
+        
+        $result2 = DB_fetchArray($result);
+        
+        // If the plugin doesn't exist, raise error
+        if ($result2 === FALSE) {
+            header("Location: index.php?cmd=11&pid={$id}&msg=102");
+            exit();  
+
+        }
+        
+        // Now try deleting from database
+        DB_query("DELETE FROM {$tblname} WHERE id = '{$id}';");
+        
+        // Make up file path
+        if ($_GET['cmd'] == 23) {
+            $fpath = "../../../repository/tmp_uploads/upgrades/".$result2['version'].'_from_'.$result2['version2'].'_'.$result2['plugin_id'].'_'.$id.$result2['ext'];
+        }
+        else {
+            $fpath = "../../../repository/main/upgrades/".$result2['version'].'_from_'.$result2['version2'].'_'.$result2['plugin_id'].'_'.$id.$result2['ext'];
+        }
+        
+        // Deleted file 
+        if (!(unlink($fpath))) {
+            header("Location: index.php?cmd=11&pid={$id}&msg=106");
+            exit();  
+ 
+        }        
+    }
+
 }
 else {
     // Show link page
-    $data = new Template($_CONF['path'].'plugins/repository/templates');
-    $data->set_file(array('index'=>'adminindex.thtml'));
-    $data->set_var('lang_94', $LANG_RMANAGER_UPLUGIN[94]);
-    $data->set_var('lang_115', $LANG_RMANAGER_UPLUGIN[115]);
-    $data->set_var('lang_116', $LANG_RMANAGER_UPLUGIN[116]);
-    $data->set_var('lang_128', $LANG_RMANAGER_UPLUGIN[128]); 
-    $data->set_var('value_0', $glib);
-    $data->parse('output','index');
-    $display .= $data->finish($data->get_var('output'));   
+    // Check to see if any need moderation
+    if (count($glib) > 0) {
+        $tmgd2 = $glib;
+    }
+    else {
+        $tmgd2 = null;
+    }
+    
+    $display .= tdisplay_formattedmessage($tmgd2, $LANG_RMANAGER_UPLUGIN[94], TRUE, TRUE, $MAIN_ARRAY_OF_LINKS);   
 } 
 
  

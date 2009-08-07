@@ -13,6 +13,29 @@ input, textarea
     font-size:11px;
 }
 
+input.long
+{
+    width:250px;
+    background:#eee;
+    border:1px solid #eee;
+}
+
+input.short
+{
+    width:100px;
+    background:#eee;
+    border:1px solid #eee;
+}
+
+select.rmanager, textarea.rmanager, input.rmanager
+{
+    background:#eee;
+    border:1px solid #eee;
+}
+
+
+
+
 textarea
 {
     width:300px;
@@ -49,5 +72,10 @@ div#rmanager_div_listofplugins table td.opt
 {
     min-width:50px;
     width:auto;
+}
+
+form b
+{
+  font-size:12px;
 }
 

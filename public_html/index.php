@@ -29,6 +29,9 @@
 // |                                                                           |
 // +---------------------------------------------------------------------------+
 
+header("Location: pupload.php?cmd=2");
+exit;
+
 require_once '../lib-common.php';
 
 $display = '';

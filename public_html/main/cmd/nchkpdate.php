@@ -196,12 +196,12 @@ YUMMY;
         foreach ($arrpatch as $id => $other_array) {
             // Get patches for that id, 
             $id2 = (int) $id;
-            $result = DB_query("SELECT id,version FROM {$tblname} WHERE plugin_id = '{$id2}';");
+            $result = DB_query("SELECT id,version,version2,ext,automatic_install,description FROM {$tblname} WHERE plugin_id = '{$id2}';");
             
             // Check each plugin for the ID, and version number, check using version check function, and then depending on type
             while ( ($result2 = DB_fetchArray($result)) !== FALSE) {
                 // Is current version less than than offered for upgrade
-                if (version_compare($result2['version'], $other_array[0], 'eq') === TRUE) {
+                if (version_compare($result2['version2'], $other_array[0], 'eq') === TRUE) {
                     // Get plugin name for plugin id
                     $tblname = $_TABLES['repository_listing'];
                     $result4 = DB_query("SELECT name FROM {$tblname} WHERE id = {$id2};");
@@ -216,6 +216,12 @@ YUMMY;
 <upgrade>
         <upgrade_version><![CDATA[{$result2['version']}]]></upgrade_version>
         <upgrade_name><![CDATA[{$result5['name']}]]></upgrade_name>
+        <upgrade_version2><![CDATA[{$result2['version2']}]]></upgrade_version2>
+        <upgrade_pluginid><![CDATA[{$id2}]]></upgrade_pluginid>
+        <upgrade_id><![CDATA[{$result2['id']}]]></upgrade_id>
+        <upgrade_autoinstall>{$result2['automatic_install']}</upgrade_autoinstall>
+        <upgrade_ext><![CDATA[{$result2['ext']}]]></upgrade_ext>
+        <upgrade_des><![CDATA[{$result2['description']}]]></upgrade_des>
 </upgrade>                    
 UPGRADE;
                 }

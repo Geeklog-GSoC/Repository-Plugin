@@ -35,7 +35,7 @@ require_once '../../../lib-common.php';
 $id = (int) ( (isset($_GET['pid'])) ? $_GET['pid'] : 0);
 
 // Select all the information from the database
-$result = DB_query("SELECT name, applies_num, version, ext FROM {$_TABLES['repository_patches']} WHERE id = {$id};");
+$result = DB_query("SELECT plugin_id, version, version2, ext FROM {$_TABLES['repository_upgrade']} WHERE id = {$id};");
     
 // Loop until we receive false
 $result2 = DB_fetchArray($result);
@@ -46,9 +46,9 @@ if ($result2 === FALSE) {
     header("Location: ../no.php");
     exit;
 }
-
+  
 // Make up file path
-$get_path = $result2['name'] . '_' . $result2['version'] . '_' . $result2['applies_num'] . '_' . $id . $result2['ext'];
+$get_path = $result2['version'] . '_from_' . $result2['version2'] . '_' . $result2['plugin_id'] . '_' . $id . $result2['ext'];
 
 if (!file_exists($get_path)) {
     header("Location: ../no.php");

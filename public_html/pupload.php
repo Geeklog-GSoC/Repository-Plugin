@@ -32,6 +32,12 @@
 require_once '../lib-common.php';
 
 ini_set('upload_max_filesize', $_RM_CONF['max_pluginpatch_upload']); 
+
+// If it is a moderator / admin, there is no point in having the plugins uploaded to be moderated since they would do that. Hence it is authenticated directly.
+if (SEC_isModerator() == TRUE) {
+    $_RM_CONF['repository_moderated'] = 0;
+}
+
 /**
 * Displays a message on the webpage according to the tmsg standard ($msg contains array key for $MESSAGE array, remaining GET parameters contain sprintf 
 * data
@@ -76,6 +82,7 @@ function ShowTMessageRManager($msg)
 
     return $retval;
 }
+
 
 $display = '';
 
@@ -130,7 +137,7 @@ if (isset($_GET['cmd'])) {
 	</script>";
 	
 	// Get repositories from database	
-	$data->set_var('lang_0', $LANG_RMANAGER_UPLUGIN[0]);
+        $data->set_var('store_0', tdisplay_formattedmessage(NULL,$LANG_RMANAGER_UPLUGIN[0],FALSE));
 	$data->set_var('lang_1', $LANG_RMANAGER_UPLUGIN[1]);
 	$data->set_var('lang_2', $LANG_RMANAGER_UPLUGIN[2]);
 	$data->set_var('lang_3', $LANG_RMANAGER_UPLUGIN[3]);
@@ -166,6 +173,7 @@ if (isset($_GET['cmd'])) {
         // Listing of all plugins assigned to your name OR set to moderate
         $data = new Template($_CONF['path'].'plugins/repository/templates');
 	$data->set_file(array('index'=>'listplugins.thtml'));
+        $display .= tdisplay_formattedmessage(NULL,$LANG_RMANAGER_DPLUGIN[0], FALSE);
         
         $tblname = $_TABLES['repository_maintainers'];
         // Lets get the list of plugin ids from the db that work with the client id
@@ -193,10 +201,8 @@ if (isset($_GET['cmd'])) {
 
         while ( ($result2 = DB_fetchArray($result)) !== FALSE) {
             $string_of_author_code .= "<tr><td class='name'>{$result2['name']}</td><td class='type'> {$LANG_RMANAGER_UPLUGIN[82]} </td><td class='opt'><a href='pupload.php?cmd=4&pid={$result2['id']}'> {$LANG_RMANAGER_UPLUGIN[77]} </a></td>
-        <td class='opt'><a href='pupload.php?cmd=3&pid={$result2['id']}'> {$LANG_RMANAGER_UPLUGIN[78]} </a></td><td class='opt'><a href='pupload.php?cmd=5&id={$result2['id']}'> {$LANG_RMANAGER_UPLUGIN[79]} </a></td><td class='opt'><a href='pupload.php?cmd=6&id={$result2['id']}'> {$LANG_RMANAGER_UPLUGIN[80]} </a></td></tr>";
+        <td class='opt'><a href='javascript:void();' onclick=\"javascript:delconfirm('pupload.php?cmd=3&pid={$result2['id']}', '{$LANG_RMANAGER_UPLUGIN[138]}');\"> {$LANG_RMANAGER_UPLUGIN[78]} </a></td><td class='opt'><a href='pupload.php?cmd=5&id={$result2['id']}'> {$LANG_RMANAGER_UPLUGIN[79]} </a></td><td class='opt'><a href='pupload.php?cmd=6&id={$result2['id']}'> {$LANG_RMANAGER_UPLUGIN[80]} </a></td></tr>";
         }
-
-        $data->set_var('lang_0', '<b>'.$LANG_RMANAGER_DPLUGIN[0].'</b>');
 	
 	// Was there any data
 	if (($string_of_author_code == "") and ($string_of_maintainer_code == "")) {
@@ -305,7 +311,7 @@ if (isset($_GET['cmd'])) {
         // Get repositories from database       
         $data = new Template($_CONF['path'].'plugins/repository/templates');
         $data->set_file(array('index'=>'editplugin.thtml'));
-        $data->set_var('lang_0', $LANG_RMANAGER_UPLUGIN[75]);
+        $data->set_var('store_0', tdisplay_formattedmessage(NULL,$LANG_RMANAGER_UPLUGIN[75],FALSE));
         $data->set_var('lang_1', $LANG_RMANAGER_UPLUGIN[1]);
         $data->set_var('lang_44', $LANG_RMANAGER_UPLUGIN[2]);
         $data->set_var('lang_3', $LANG_RMANAGER_UPLUGIN[3]);
@@ -317,7 +323,6 @@ if (isset($_GET['cmd'])) {
         $data->set_var('lang_9', $LANG_RMANAGER_UPLUGIN[9]);
         $data->set_var('lang_10', $LANG_RMANAGER_UPLUGIN[10]);
         $data->set_var('lang_11', $LANG_RMANAGER_UPLUGIN[11]);
-        $data->set_var('lang_12', $LANG_RMANAGER_UPLUGIN[12]);
         $data->set_var('lang_13', $LANG_RMANAGER_UPLUGIN[13]);
         $data->set_var('lang_15', $LANG_RMANAGER_UPLUGIN[15]);
         $data->set_var('lang_16', $LANG_RMANAGER_UPLUGIN[16]);
@@ -346,29 +351,28 @@ if (isset($_GET['cmd'])) {
   
         // MySQL is it supported?
         if ( ($db & 1) === 0) {
-            $data->set_var('value_4a', 'no');
+            $data->set_var('value_4a', '');
         }
         else {
-            $data->set_var('value_4a', 'yes');            
+            $data->set_var('value_4a', 'checked="checked"');            
         }
 
         // MSSQL
         if ( ($db & 2) === 0) {
-            $data->set_var('value_4b', 'no');
+            $data->set_var('value_4b', '');
         }
         else {
-            $data->set_var('value_4b', 'yes');            
+            $data->set_var('value_4b', 'checked="checked"');            
         }
    
         // PSGRE
         if ( ($db & 4) === 0) {
-            $data->set_var('value_4c', 'no');
+            $data->set_var('value_4c', '');
         }
         else {
-            $data->set_var('value_4c', 'yes');            
+            $data->set_var('value_4c', 'checked="checked"');            
         }
-
-	$data->set_var('value_5', $row['dependencies']);        
+        
         $data->set_var('value_6', $row['soft_dep']);        
         $data->set_var('value_7', $row['short_des']);             
         $data->set_var('value_9', $row['credits']);        
@@ -384,7 +388,7 @@ if (isset($_GET['cmd'])) {
 	// This instruction sets the javascript language variables
 	
 	// Get repositories from database	
-	$data->set_var('lang_45', $LANG_RMANAGER_UPLUGIN[45]);
+	$data->set_var('store_0', tdisplay_formattedmessage(NULL, $LANG_RMANAGER_UPLUGIN[45], FALSE));
 	$data->set_var('lang_1', $LANG_RMANAGER_UPLUGIN[1]);
 	$data->set_var('lang_46', $LANG_RMANAGER_UPLUGIN[46]);
 	$data->set_var('lang_47', $LANG_RMANAGER_UPLUGIN[47]);
@@ -415,8 +419,11 @@ if (isset($_GET['cmd'])) {
 	
 	// Get repositories from database	
 	$data->set_var('lang_1', $LANG_RMANAGER_UPLUGIN[1]);
-	$data->set_var('lang_69', $LANG_RMANAGER_UPLUGIN[69]);
+	$data->set_var('store_0', tdisplay_formattedmessage(NULL, $LANG_RMANAGER_UPLUGIN[69], FALSE));
 	$data->set_var('lang_70', $LANG_RMANAGER_UPLUGIN[70]);
+        $data->set_var('lang_139', $LANG_RMANAGER_UPLUGIN[139]);
+        $data->set_var('lang_2', $LANG_RMANAGER_UPLUGIN[2]);
+        $data->set_var('lang_140', $LANG_RMANAGER_UPLUGIN[140]);
 	$data->set_var('lang_71', $LANG_RMANAGER_UPLUGIN[71]);
 	$data->set_var('lang_17', $LANG_RMANAGER_UPLUGIN[17]);
         $data->set_var('value_0',(int) ( (isset($_GET['id'])) ? $_GET['id'] : 0));
@@ -439,20 +446,18 @@ else if (isset($_GET['ret'])) {
             // Now, get variables
             $name = (isset($_POST['GEEKLOG_PLNAME'])) ? $_POST['GEEKLOG_PLNAME'] : "";
             $version = (isset($_POST['GEEKLOG_PLVERSION'])) ? $_POST['GEEKLOG_PLVERSION'] : "";
-            $mysql = (isset($_POST['GEEKLOG_PLMYSQL'])) ? $_POST['GEEKLOG_PLMYSQL'] : "no";
-            $mssql = (isset($_POST['GEEKLOG_PLMSSQL'])) ? $_POST['GEEKLOG_PLMSSQL'] : "no";
-            $postgre = (isset($_POST['GEEKLOG_PLPOSTGRE'])) ? $_POST['GEEKLOG_PLPOSTGRE'] : "no";
-            $dependencies = (isset($_POST['GEEKLOG_PLDEPENDENCIES'])) ? $_POST['GEEKLOG_PLDEPENDENCIES'] : "";
+            $mysql = (isset($_POST['GEEKLOG_PLMYSQL'])) ? $_POST['GEEKLOG_PLMYSQL'] : false;
+            $mssql = (isset($_POST['GEEKLOG_PLMSSQL'])) ? $_POST['GEEKLOG_PLMSSQL'] : false;
+            $postgre = (isset($_POST['GEEKLOG_PLPOSTGRE'])) ? $_POST['GEEKLOG_PLPOSTGRE'] : false;
             $sys_dependencies = (isset($_POST['GEEKLOG_PLSOFTDEP'])) ? $_POST['GEEKLOG_PLSOFTDEP'] : "";
             $shrt_des = (isset($_POST['GEEKLOG_SHRTDES'])) ? $_POST['GEEKLOG_SHRTDES'] : "";
             $credits = (isset($_POST['GEEKLOG_CREDITS'])) ? $_POST['GEEKLOG_CREDITS'] : "";
-            $update = (isset($_POST['GEEKLOG_UPDATE'])) ? $_POST['GEEKLOG_UPDATE'] : "0";
             $state = (isset($_POST['GEEKLOG_STATE'])) ? $_POST['GEEKLOG_STATE'] : "stable";
             $fname = (isset($_POST['GEEKLOG_PLNAME2'])) ? $_POST['GEEKLOG_PLNAME2'] : "";
 
             // Check required variables for validity
             // And we also have to check to make sure that plugin already exists
-            if (($name == "") or ($fname == "") or ($version == "") or ($shrt_des == "") or (($mysql == "no") and ($mssql == "no") and ($postgre == "no"))) {
+            if (($name == "") or ($fname == "") or ($version == "") or ($shrt_des == "") or (($mysql == false) and ($mssql == false) and ($postgre == false))) {
                 header("Location: pupload.php?cmd=1&msg=23");
                 exit();
             }
@@ -471,7 +476,7 @@ else if (isset($_GET['ret'])) {
 	   
 	   // Is the file size too large (MAX_UPLOADED_FILE_SIZE)
 	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > $_RM_CONF['max_pluginpatch_upload']) {
-                header("Location: pupload.php?cmd=1&msg=30&tr={$_RM_CONF['max_pluginpatch_upload']}@");
+                header("Location: pupload.php?cmd=1&tmsg=30&enable_spf=1&ssp=InvalidFileSize");
                 exit();
 	   }
 	   
@@ -611,15 +616,15 @@ else if (isset($_GET['ret'])) {
 
            // Get database bit value
            $database_bit_value = 0;
-           if ($mysql == "yes") {
+           if ($mysql !== FALSE) {
 	       $database_bit_value = $database_bit_value | 1;
            }
 
-           if ($mssql == "yes") {
+           if ($mssql !== FALSE) {
 	       $database_bit_value = $database_bit_value | 2;
            }
 
-           if ($postgre == "yes") {
+           if ($postgre !== FALSE) {
 	       $database_bit_value = $database_bit_value | 4;
            }
 
@@ -627,7 +632,7 @@ else if (isset($_GET['ret'])) {
            #http://wiki.geeklog.net/index.php/Using_COM_applyFilter
            $name = COM_applyFilter($name);
            $version = COM_applyFilter($version);
-           $dependencies = COM_applyFilter($dependencies);
+           $dependencies = "";
            $sys_dependencies = COM_applyFilter($sys_dependencies);
            $shrt_des = COM_applyFilter($shrt_des);
            $credits = COM_applyFilter($credits);
@@ -676,30 +681,28 @@ HETERO;
 	   // Since everything has succeeded successfully, display any files that should be included, exit
            $display = COM_siteHeader('');
 	   if ($_RM_CONF['repository_moderated'] == TRUE) {
-               $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;        
+               $display .= tdisplay_formattedmessage(array('<b>'.$LANG_RMANAGER_UPLUGIN[40]."</b>".$filesmissing_msg));        
 	   }
 	   else {
-	       $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br /><a href='{$output_repository}'>{$name}_{$version}_{$state}_{$MYSQL_ID}{$full_ext}</a>".$filesmissing_msg;     
+	       $display .= tdisplay_formattedmessage(array('<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br /><a href='{$output_repository}'>{$name}_{$version}_{$state}_{$MYSQL_ID}{$full_ext}</a>".$filesmissing_msg));     
 	   }
         }
         else if (isset($_POST['submit_edit_plugin'])) {
             // Now, get variables
             $name = (isset($_POST['GEEKLOG_PLNAME'])) ? $_POST['GEEKLOG_PLNAME'] : "";
             $version = (isset($_POST['GEEKLOG_PLVERSION'])) ? $_POST['GEEKLOG_PLVERSION'] : "";
-            $mysql = (isset($_POST['GEEKLOG_PLMYSQL'])) ? $_POST['GEEKLOG_PLMYSQL'] : "no";
-            $mssql = (isset($_POST['GEEKLOG_PLMSSQL'])) ? $_POST['GEEKLOG_PLMSSQL'] : "no";
-            $postgre = (isset($_POST['GEEKLOG_PLPOSTGRE'])) ? $_POST['GEEKLOG_PLPOSTGRE'] : "no";
-            $dependencies = (isset($_POST['GEEKLOG_PLDEPENDENCIES'])) ? $_POST['GEEKLOG_PLDEPENDENCIES'] : "";
+            $mysql = (isset($_POST['GEEKLOG_PLMYSQL'])) ? $_POST['GEEKLOG_PLMYSQL'] : false;
+            $mssql = (isset($_POST['GEEKLOG_PLMSSQL'])) ? $_POST['GEEKLOG_PLMSSQL'] : false;
+            $postgre = (isset($_POST['GEEKLOG_PLPOSTGRE'])) ? $_POST['GEEKLOG_PLPOSTGRE'] : false;
             $sys_dependencies = (isset($_POST['GEEKLOG_PLSOFTDEP'])) ? $_POST['GEEKLOG_PLSOFTDEP'] : "";
             $shrt_des = (isset($_POST['GEEKLOG_SHRTDES'])) ? $_POST['GEEKLOG_SHRTDES'] : "";
             $credits = (isset($_POST['GEEKLOG_CREDITS'])) ? $_POST['GEEKLOG_CREDITS'] : "";
-            $update = (isset($_POST['GEEKLOG_UPDATE'])) ? $_POST['GEEKLOG_UPDATE'] : "0";
             $state = (isset($_POST['GEEKLOG_STATE'])) ? $_POST['GEEKLOG_STATE'] : "stable";
             $fname = (isset($_POST['GEEKLOG_PLNAME2'])) ? $_POST['GEEKLOG_PLNAME2'] : "";
             
             // Check required variables for validity
             // And we also have to check to make sure that plugin already exists
-            if (($name == "") or ($version == "") or ($shrt_des == "") or (($mysql == "no") and ($mssql == "no") and ($postgre == "no"))) {
+            if (($name == "") or ($version == "") or ($shrt_des == "") or (($mysql == false) and ($mssql == false) and ($postgre == false))) {
                 header("Location: pupload.php?cmd=2&msg=23");
                 exit();
             }	    
@@ -710,7 +713,7 @@ HETERO;
 		
 		// Is the file size too large (MAX_UPLOADED_FILE_SIZE)
 	        if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > $_RM_CONF['max_pluginpatch_upload']) {
-                header("Location: pupload.php?cmd=2&msg=30");
+                header("Location: pupload.php?cmd=2&tmsg=30&enable_spf=1&ssp=InvalidFileSize");
                 exit();    
 	        }
 		
@@ -851,15 +854,15 @@ HETERO;
 		
            // Get database bit value
            $database_bit_value = 0;
-           if ($mysql == "yes") {
+           if ($mysql !== FALSE) {
 	       $database_bit_value = $database_bit_value | 1;
            }
 
-           if ($mssql == "yes") {
+           if ($mssql !== FALSE) {
 	       $database_bit_value = $database_bit_value | 2;
            }
 
-           if ($postgre == "yes") {
+           if ($postgre !== FALSE) {
 	       $database_bit_value = $database_bit_value | 4;
            }
 
@@ -867,7 +870,7 @@ HETERO;
             #http://wiki.geeklog.net/index.php/Using_COM_applyFilter
             $name = COM_applyFilter($name);
             $version = COM_applyFilter($version);
-            $dependencies = COM_applyFilter($dependencies);
+            $dependencies = "";
             $sys_dependencies = COM_applyFilter($sys_dependencies);
             $shrt_des = COM_applyFilter($shrt_des);
             $credits = COM_applyFilter($credits);
@@ -937,14 +940,14 @@ HETERO;
 	   // Since everything has succeeded successfully, display any files that should be included, exit
            $display = COM_siteHeader('');
 	   if ($_FILES['GEEKLOG_FILE_PUPLOAD']['error'] ===  UPLOAD_ERR_NO_FILE) {
-	       $display .= $LANG_RMANAGER_UPLUGIN[76];    
+	       $display .= tdisplay_formattedmessage(array('<b>'.$LANG_RMANAGER_UPLUGIN[76].'</b>'));    
 	   }
 	   else if ($_RM_CONF['repository_moderated'] == TRUE) {
-               $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;               
+               $display .= tdisplay_formattedmessage(array('<b>'.$LANG_RMANAGER_UPLUGIN[40]."</b>".$filesmissing_msg));               
 	   }
 
 	   else {
-               $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br /><a href='{$output_repository}'>{$name}_{$version}_{$state}_{$MYSQL_ID}{$full_ext}</a>".$filesmissing_msg;     	   
+               $display .= tdisplay_formattedmessage(array('<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br /><a href='{$output_repository}'>{$name}_{$version}_{$state}_{$MYSQL_ID}{$full_ext}</a>".$filesmissing_msg));     	   
            }
 
 
@@ -981,7 +984,9 @@ HETERO;
                     exit();
                 }
             }
-	    
+
+           $name = COM_applyFilter($name);
+           
            // Check if a patch of the same name exists in the repository
 	   $tblname = $_TABLES['repository_patches'];
            $result = DB_query("SELECT name FROM {$tblname} WHERE name = '{$name}';");
@@ -1136,7 +1141,6 @@ HETERO;
 
            // Insert values into the database
            #http://wiki.geeklog.net/index.php/Using_COM_applyFilter
-           $name = COM_applyFilter($name);
            $version = COM_applyFilter($version);
            $vtype = COM_applyFilter($vtype);
            $severity = COM_applyFilter($severity);
@@ -1196,40 +1200,253 @@ HETERO;
 	   // Since everything has succeeded successfully, display any files that should be included, exit
            $display = COM_siteHeader('');
 	   if ($_RM_CONF['repository_moderated'] == TRUE) {
-               $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br />".$LANG_RMANAGER_UPLUGIN[40].$filesmissing_msg;        
+               $display .= tdisplay_formattedmessage(array('<b>'.$LANG_RMANAGER_UPLUGIN[147]."</b>".$filesmissing_msg));        
 	   }
 	   else {
-	       $display .= '<b>'.$LANG_RMANAGER_UPLUGIN[39]."</b><br /><br /><a href='{$output_repository}'>{$name}_{$version}_{$state}_{$MYSQL_ID}{$full_ext}</a>".$filesmissing_msg;     
+	       $display .= tdisplay_formattedmessage(array('<b>'.$LANG_RMANAGER_UPLUGIN[146]."</b><br /><br /><a href='{$output_repository}'>{$name}_{$version}_{$state}_{$MYSQL_ID}{$full_ext}</a>".$filesmissing_msg));     
 	   }
 
 	    
 	}
+        // Is patch submittal
         else if (isset($_POST['submit_upload_upgrade'])) {
-            // Get the POST variables
-            $version = (isset($_POST['GEEKLOG_PLVERSION'])) ? $_POST['GEEKLOG_PLVERSION'] : null;
+            // Get values
+            $version = (isset($_POST['GEEKLOG_PLVERSION'])) ? $_POST['GEEKLOG_PLVERSION'] : "";
+            $version2 = (isset($_POST['GEEKLOG_PLVERSION2'])) ? $_POST['GEEKLOG_PLVERSION2'] : "";
             $id = (int) ( (isset($_GET['id'])) ? $_GET['id'] : 0);
+            $des = (isset($_POST['GEEKLOG_DES'])) ? $_POST['GEEKLOG_DES'] : "";
+            
+            // Check required variables for validity
+            // And we also have to check to make sure that plugin already exists
+            if (($version == "") or ($version2 == "") or ($id == 0) or ($des == "")) {
+                header("Location: pupload.php?cmd=2&msg=57");
+                exit();
+            }
+            // Send query to the database
+            $tblname = $_TABLES['repository_listing'];
 
-            if( ($version == null) or ($id == 0)) {
-                header("Location: pupload.php?cmd=2&msg=72");
-                exit(); 
+            // Does the user have permissions for this plugin?
+            // Check if author
+            $result = DB_query("SELECT id FROM {$tblname} WHERE uploading_author = {$_USER['uid']};");
+            
+            if (DB_fetchArray($result) === FALSE) {
+                // Is maintainer
+                $tbl2 = $_TABLES['repository_maintainer'];
+                $result = DB_query("SELECT * FROM {$tbl2} WHERE maintainer_id = {$_USER['uid']} AND plugin_id = {$id};");
+                if ($result === NULL) {
+                    header("Location: pupload.php?cmd=2&msg=74");
+                    exit();
+                }
             }
 
-            // Insert into the database
-            #http://wiki.geeklog.net/index.php/Using_COM_applyFilter
-            $version = COM_applyFilter($version);
+           // Insert values into the database
+           #http://wiki.geeklog.net/index.php/Using_COM_applyFilter
+           $version = COM_applyFilter($version);
+           $version2 = COM_applyFilter($version2);
+           $des = COM_applyFilter($des);
+           
+           // Check if a patch of the same name exists in the repository
+           $tblname = $_TABLES['repository_upgrade'];
+           $result = DB_query("SELECT version FROM {$tblname} WHERE version = '{$version}' AND version2 = '{$version2}';");
+   
+           // Get result, or if null, the patch can be uploaded since it won't exist
+           $res = DB_fetchArray($result);
+           
+           if (($res !== FALSE) and ($update == "0")) {
+                header("Location: pupload.php?cmd=2&msg=141");
+                exit();           
+           }
+           
+           // Is the file size too large (MAX_UPLOADED_FILE_SIZE)
+           if ($_FILES['GEEKLOG_FILE_PUPLOAD']['size'] > $_RM_CONF['max_pluginpatch_upload']) {
+                header("Location: pupload.php?cmd=2&msg=30");
+                exit();       
+           }
+           
+           // Have to make sure its an uploaded file, and not a trick to get to /etc/psswd etc
+           if ( (!(is_uploaded_file($_FILES['GEEKLOG_FILE_PUPLOAD']['tmp_name']))) or ($_FILES['GEEKLOG_FILE_PUPLOAD']['error'] !==  UPLOAD_ERR_OK )) {
+                header("Location: pupload.php?cmd=2&msg=30");
+                exit();  
+           }
+
+           // The patch does not already exist, try file formatting - get base file name
+           $file_param = pathinfo($_FILES['GEEKLOG_FILE_PUPLOAD']['name']);
+
+           // Check extension
+           // The extension check will also check to make sure all the required files are there for auto installation
+           $array_inc_files_cp = array();
+           $is_zip = false;
+           $full_ext = null;
+
+           switch ($file_param['extension']) {
+               case "gz": 
+                   // Load listing into directory
+                   include_once 'Archive/Tar.php';
+                   $comp = new Archive_Tar($_FILES['GEEKLOG_FILE_PUPLOAD']['tmp_name'], 'gz');
+                   
+                   $array_inc_files_cp = $comp->listContent();
+                   $full_ext = ".tar.gz";
+                   break;
+               case "bz2": 
+                   // Load listing into directory
+                   include_once 'Archive/Tar.php';
+                   $comp = new Archive_Tar($_FILES['GEEKLOG_FILE_PUPLOAD']['tmp_name'], 'bz2');
+                   
+                   $array_inc_files_cp = $comp->listContent();
+                   $full_ext = ".tar.bz2";
+                   break;
+               case "tar":
+                   // Load listing into directory
+                   include_once 'Archive/Tar.php';
+                   $comp = new Archive_Tar($_FILES['GEEKLOG_FILE_PUPLOAD']['tmp_name'], null);
+                   
+                   $array_inc_files_cp = $comp->listContent();
+                   $full_ext = ".tar";
+                   break;
+               case "zip":
+                   // We are using the Zip Archiving extension
+                   $comp = new ZipArchive();
+                   $re = $comp->open($_FILES['GEEKLOG_FILE_PUPLOAD']['tmp_name']); 
+                   
+                   // We break if it failed since the empty $array_inc array will caught anyways later on
+                   if ($re !== TRUE) {
+                       break;
+                   }
+                   
+                   // Loop over each file, trying to get data
+                   for ($i = 0; $i < $comp->numFiles; $i++) {
+                       $array_inc_files_cp[] = $comp->statIndex($i);
+                   }
+                   
+                   $is_zip = true;
+                   $full_ext = ".zip";
+                   // Done now, we have our listing :)
+                   break;
+               default:
+                   header("Location: pupload.php?cmd=2&msg=30");
+                   exit();  
+                   break;
+
+           }
+
+           // Make sure the files exist that we need
+           // These files are install_patch.php
+           if ($is_zip === TRUE) {
+               $is_zip = "name";
+           }
+           else {
+               $is_zip = "filename";
+           }
+
+           // This integer stores the value of the files required in the bits
+           // Integer is a 32 bit, so 32 required file names
+           // Bits are specified to files in BIG ENDIAN, in the following way:
+           // bit #  mask#    :    filename
+           //  0     1        :    autoinstall.php     
+           //  1     2        :    autouninstall.php
+           //  2     4        :    functions.inc
+           //  3     8        :    config.php
+           //  4              :    not set
+           //  5              :    not set
+           //  6              :    etc
+           // As you can see, the mask goes up by power of 2, so 2^0, 2^1, 2^2, 2^3, etc
+           // In the case that functions.inc is missing, the end integer (last 4 bits) would be 1011 or 11. All present is F or 15
+           // Array is format: Mask #=>file name
+           $required_fnames = array(1=> "update.php");
+           $bitwise_integer_value = 0;           
+
+           // Time to loop through the array, getting the file name's basename, and then uploading it
+           foreach ($array_inc_files_cp as $key) {
+               $tmp_fn = pathinfo($key[$is_zip]); 
+
+               // Check against file name
+               foreach ($required_fnames as $bitkey => $rfname) {
+                   // Does the basename match any
+                   if ($rfname == $tmp_fn['basename']) {
+                       // Set bit key value
+                       $bitwise_integer_value = $bitwise_integer_value | $bitkey; 
+                   }  
+               }
+           }
+
+           // Now check to see if the file is missing
+           // To do this we simply loop over the array, and OR each with the next key value to get the total number
+           $bitwise_int_required_value = 0; // Value if everything is OK
+           $bitkey = 0;               
+
+           foreach ($required_fnames as $bitkey => $rfname) {
+               $bitwise_int_required_value = $bitwise_int_required_value | $bitkey;
+           }
+
+           // Now we have the real value that is needed, lets find what files are missing using simple math
+           // We are going to AND the value of the key with the required value, and then if that value is then 0,
+           // That file has not been found, else if it is non zero (the value of the key), it has been found
+           $missing_files = array();
+           
+           foreach ($required_fnames as $bitkey => $rfname) {
+              if (($bitwise_integer_value & $bitkey) === 0) {
+                   $missing_files[] = $rfname;
+               }     
+           }
+
+           // Now check to see if we can offer this one for automatic install or not
+           if ($bitwise_integer_value === $bitwise_int_required_value) {
+               $automatic_installer = 1;    
+           }
+           else {
+               $automatic_installer = 0;
+           }
+           
+           $tblname = $_TABLES['repository_upgrade'];          
 
            // Send query to the database
-           $tblname = $_TABLES['repository_upgrade'];
            // This type of string format needs to be against the 'wall' and not indented for it to work -- 
 $qstr = <<<HETERO
-INSERT INTO {$tblname}(plugin_id, version) VALUES('{$id}','{$version}');
+INSERT INTO {$tblname}(plugin_id, version, version2, description, ext, moderation, automatic_install) 
+VALUES('{$id}', '{$version}','{$version2}','{$des}','{$full_ext}', '{$_RM_CONF['repository_moderated']}', '{$automatic_installer}');
 HETERO;
 
            $result = DB_query($qstr);
+               
+           $MYSQL_ID = DB_insertId();    
+     
+           // Continue with the upload, if the user figured in error, he can update the patch later when the message says he can
+           // Time to move the file over to the repository directory
+           // The upload path can either be the tmp upload or the real repository
+           if ($_RM_CONF['repository_moderated'] === 1) {
+               $output_repository = "tmp_uploads/upgrades/".$version.'_from_'.$version2.'_'.$id.'_'.$MYSQL_ID.$full_ext;  
+           }
+           else {
+               $output_repository = "main/upgrades/".$version.'_from_'.$version2.'_'.$id.'_'.$MYSQL_ID.$full_ext;
+           }
+           
+           // Move the archive now
+           if (!(move_uploaded_file($_FILES['GEEKLOG_FILE_PUPLOAD']['tmp_name'], $output_repository))) {
+                header("Location: pupload.php?cmd=2&msg=31");
+                exit(); 
+           }
+         
+           // Make a message saying if any files are missing
+           $filesmissing_msg = "";
+           if ($bitwise_integer_value !== $bitwise_int_required_value) {
+               $filesmissing_msg = "<br /><br />".$LANG_RMANAGER_UPLUGIN[142].'<br />'.$LANG_RMANAGER_UPLUGIN[143]."<br /><span style='color:red'>";
+               foreach ($missing_files as $hkey) {
+                   $filesmissing_msg .= $hkey."<br />";        
+               }
+               
+               $filesmissing_msg .= "</span>";
+           }
+           
+           // Since everything has succeeded successfully, display any files that should be included, exit
+           $display = COM_siteHeader('');
+           if ($_RM_CONF['repository_moderated'] == TRUE) {
+               $display .= tdisplay_formattedmessage(array('<b>'.$LANG_RMANAGER_UPLUGIN[145]."</b>".$filesmissing_msg));        
+           }
+           else {
+               $display .= tdisplay_formattedmessage(array('<b>'.$LANG_RMANAGER_UPLUGIN[144]."</b><br /><br /><a href='{$output_repository}'>{$name}_{$version}_{$state}_{$MYSQL_ID}{$full_ext}</a>".$filesmissing_msg));     
+           }
+
             
-           header("Location: pupload.php?cmd=2&msg=73");
-           exit(); 
-              
         }
         else {
            header("Location: index.php?cmd=2&msg=136");
@@ -1244,7 +1461,9 @@ HETERO;
 
 }
 else {
-    header("Location: index.php?cmd=2&msg=136");
+    // Load main page
+    #$display .= tdisplay_formattedmessage();
+    header("Location: pupload.php?cmd=2");
     exit();
 }
 

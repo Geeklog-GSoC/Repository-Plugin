@@ -1,17 +1,19 @@
 
                                 <!-- Begin Upgrade Announcement  -->
-                                    <br />
-                                    {lang_117}
+                                    {store_0}
                                 
-                                <form name="UPLOAD_PLUGIN_FORM" id="UPLOAD_PLUGIN_FORM" method="post" action="index.php?cmd=6&ret=11&pid={value_0}" enctype="multipart/form-data">
+                                <form style="margin-top:105px;" name="UPLOAD_PLUGIN_FORM" id="UPLOAD_PLUGIN_FORM" method="post" action="index.php?cmd=6&ret=11&pid={value_0}" enctype="multipart/form-data">
+                                    <b>{lang_119}</b> <hr />
                                     <div class="smalltxt">{lang_1}</div>
                                     <div class="smalltxt" id="GEEKLOG_PUPLOAD_ERRFORM" style="color:red"></div>
  
                                     <div class="smalltxt">{lang_118}</div>
-                                    <input maxlength="100" type="text" name="GEEKLOG_PLUNAME" id="GEEKLOG_PLUNAME" value="" />
+                                    <input maxlength="100" class="long" type="text" name="GEEKLOG_PLUNAME" id="GEEKLOG_PLUNAME" value="" />
  
                                     <div class="smalltxt"></div>
-                                    <input type="submit" name="submit_upload_maintainer" value="{lang_119}" /><input type="reset" name="reset_upload_plugin" value="{lang_17}" />
+                                    <input type="submit" class="rmanager" name="submit_upload_maintainer" value="{lang_119}" />&nbsp;&nbsp;<input class="rmanager" type="reset" name="reset_upload_plugin" value="{lang_17}" />
 
                                  </form>
+                                 <br /><br />
+                                 <b>{lang_152}</b> <hr />
 <!-- End  Upgrade Announcement  Center -->

@@ -152,10 +152,272 @@ function plugin_cclabel_repository()
 * @return   string      URL of the icon
 *
 */
-function plugin_geticon_repository ()
+function plugin_geticon_repository ($largeimg=false)
 {
     global $_CONF;
-
-    return $_CONF['site_url'] . '/repository/images/repository.png';
+    if ($largeimg) {
+        return $_CONF['site_url'] . '/repository/images/repository_1.png';
+    }
+    else {
+        return $_CONF['site_url'] . '/repository/images/repository_s.png';    
+    }
 }
 
+
+/**
+* Displays a return message in a nice format box, with links to more data functions
+* 
+* @param    array     $msg=NULL     Message (s) to display, each element is a line
+* @param    string    $rmsg=NULL    Main display message, defaults to Repository Manager if not set
+* @param    bool      $display_announce=TRUE    If set to false, this will prevent the display of the message ($msg), by default it will try to
+* @param    bool      $displaylinks=TRUE    If set to false, this will not display the links on the page. 
+* @param    array     $links=NULL           An array of Link Name => Href values to use instead of the default links
+*
+*/
+function tdisplay_formattedmessage($msg=NULL, $rmsg=NULL, $display_announce=TRUE, $displaylinks=TRUE, $links=NULL)
+{
+    global $LANG_RMANAGER_UPLUGIN;
+    
+    if ($rmsg == NULL) {
+        $rmsg = $LANG_RMANAGER_UPLUGIN[137];
+    }
+    
+    if ($displaylinks == TRUE) {
+        if ($links !== NULL) {
+            // $links array and for each key (name) => value (href)
+            $displaylinks = "";
+            foreach ($links as $name => $href) {
+                $displaylinks .= '<a style="font-size:12px;font-weight:normal;" href="'.$href.'">'.$name.'</a><br />';         
+            }
+            
+            $displaylinks .= '</div>';
+        }
+        else {
+            $displaylinks = <<<DLINKS
+<a style="font-size:12px;font-weight:normal;" href="pupload.php?cmd=1">{$LANG_RMANAGER_UPLUGIN[92]}</a><br /><a style="font-size:12px;font-weight:normal;" href="pupload.php?cmd=2">{$LANG_RMANAGER_UPLUGIN[93]}</a></div>        
+DLINKS;
+        }
+    }
+    else {
+        $displaylinks = "</div>";
+    }
+    
+    // If the display announce is false, it means that dont display the last part
+    if ($display_announce === FALSE) {
+        //
+        $display_announce = "";
+    }
+    else {
+        // Preliminary Check - is msg an array?
+        if (count($msg) <= 0) {
+            $array = array($msg);
+        }
+        else {
+            $array = $msg;
+        }
+    
+        $str_r = "";
+    
+        // Loop over each message, and display data
+        foreach ($array as $string) {
+            $str_r .= $string . '<br />';
+        }
+        
+        $display_announce = '<div style="margin-top:135px;">'.$str_r.'</div>';
+    }
+    
+    $img = plugin_geticon_repository(true);
+$EDATA = <<<EDATA
+<br /><img src="{$img}" alt="" style="width:256px;height:256px;float:left;" /><div style="margin-top:100px;font-weight:bold;font-size:16px;">{$rmsg}<br /><br />{$displaylinks}
+{$display_announce}
+EDATA;
+
+   return $EDATA;
+
+}
+
+
+// Admin list function
+function ADMIN_getListField_listrepositorypl_plugins($fieldname, $fieldvalue, $A, $icon_arr)
+{
+    global $_CONF, $LANG_RMANAGER_UPLUGIN, $_TABLES;
+
+    $retval = '';
+    switch($fieldname) {
+        case 'name':
+            // Check to see if the repository is ok
+            $retval = $A['name'] . ' ' . $A['state'] . ' ' . $A['version'];
+            break;
+        case 'uploader':
+            // Get uploading author name from database
+            $result = DB_query("SELECT username FROM {$_TABLES['users']} WHERE uid = '{$A['uploading_author']}';");
+            $result2 = DB_fetchArray($result);
+            
+            // Does it exist?
+            if ($result === FALSE) {
+                $retval = "N/A";
+            }
+            else {
+                $retval = $result2['username'];
+            }
+            break;
+        case 'download':
+            if ($A['moderation'] == 1) {
+                $retval = '<a href="index.php?cmd=6&ret=1&pid='.$A['id'].'">'.$LANG_RMANAGER_UPLUGIN[96].'</a>';                        
+            }
+            else {
+                $retval = '<a href="index.php?cmd=6&ret=7&pid='.$A['id'].'">'.$LANG_RMANAGER_UPLUGIN[96].'</a>';            
+            }
+            break;
+        case 'approve':
+            $retval = '<a href="index.php?cmd=6&ret=2&pid='.$A['id'].'">'.$LANG_RMANAGER_UPLUGIN[97].'</a>';
+        case 'add_maintainer':
+            $retval = '<a href="index.php?cmd=5&pid='.$A['id'].'">'.$LANG_RMANAGER_UPLUGIN[111].'</a>';
+            break;
+        case 'delete':
+            if ($A['moderation'] == 1) {
+                $retval = '<a href="javascript:void();" onclick="javascript:delconfirm(\'index.php?cmd=6&ret=3&pid='.$A['id'].'\', \''.$LANG_RMANAGER_UPLUGIN[138].'\');">'.$LANG_RMANAGER_UPLUGIN[98].'</a>';
+              
+            }
+            else {
+                $retval = '<a href="javascript:void();" onclick="javascript:delconfirm(\'index.php?cmd=6&ret=8&pid='.$A['id'].'\', \''.$LANG_RMANAGER_UPLUGIN[138].'\');">'.$LANG_RMANAGER_UPLUGIN[98].'</a>';
+            }        
+            break;
+        case 'show_patches':
+            $retval = '<a href="index.php?cmd=4&pid='.$A['id'].'">'.$LANG_RMANAGER_UPLUGIN[131].'</a>';
+            break;
+        case 'show_upgrades':
+            $retval = '<a href="index.php?cmd=11&pid='.$A['id'].'">'.$LANG_RMANAGER_UPLUGIN[151].'</a>';
+            break;            
+        default:
+            $retval = $fieldvalue;
+            break;
+    }
+    return $retval;
+}
+
+// Patches
+function ADMIN_getListField_listrepositorypl_patches($fieldname, $fieldvalue, $A, $icon_arr)
+{
+    global $_CONF, $LANG_RMANAGER_UPLUGIN, $_TABLES;
+
+    $retval = '';
+    switch($fieldname) {
+        case 'name':
+            // Check to see if the repository is ok
+            $retval = $A['name'] . ' ' . $A['applies_num'] . ' ' . $A['version'] . ' ' . $LANG_RMANAGER_UPLUGIN[103] . ' ' .$A['plugin_id'];
+            break;
+        case 'uploader':
+            // Get uploading author name from database
+            $result = DB_query("SELECT username FROM {$_TABLES['users']} WHERE uid = '{$A['uploading_author']}';");
+            $result2 = DB_fetchArray($result);
+            
+            // Does it exist?
+            if ($result === FALSE) {
+                $retval = "N/A";
+            }
+            else {
+                $retval = $result2['username'];
+            }
+            break;
+        case 'approve':
+            $retval = '<a href="index.php?cmd=6&ret=5&pid='.$A['id'].'">'.$LANG_RMANAGER_UPLUGIN[97].'</a>';
+            break;
+        case 'download':
+           if ($A['moderation'] == 1) {
+                $retval = '<a href="index.php?cmd=6&ret=4&pid='.$A['id'].'">'.$LANG_RMANAGER_UPLUGIN[96].'</a>';              
+            }
+            else {
+                $retval = '<a href="index.php?cmd=6&ret=9&pid='.$A['id'].'">'.$LANG_RMANAGER_UPLUGIN[96].'</a>';
+            }       
+            break;
+       case 'delete':
+           if ($A['moderation'] == 1) {
+                $retval = '<a href="javascript:void();" onclick="javascript:delconfirm(\'index.php?cmd=6&ret=6&pid='.$A['id'].'\', \''.$LANG_RMANAGER_UPLUGIN[138].'\');">'.$LANG_RMANAGER_UPLUGIN[98].'</a>';           
+            }
+            else {
+                $retval = '<a href="javascript:void();" onclick="javascript:delconfirm(\'index.php?cmd=6&ret=10&pid='.$A['id'].'\', \''.$LANG_RMANAGER_UPLUGIN[138].'\');">'.$LANG_RMANAGER_UPLUGIN[98].'</a>';
+            }   
+            break;
+        default:
+            $retval = $fieldvalue;
+            break;
+    }
+    return $retval;
+}
+
+
+// Upgrades
+function ADMIN_getListField_listrepositorypl_upgrade($fieldname, $fieldvalue, $A, $icon_arr)
+{
+    global $_CONF, $LANG_RMANAGER_UPLUGIN, $_TABLES;
+
+    $retval = '';
+    switch($fieldname) {
+        case 'name':
+            // Get uploading author name from database
+            $result = DB_query("SELECT name FROM {$_TABLES['repository_listing']} WHERE id = '{$A['plugin_id']}';");
+            $result2 = DB_fetchArray($result);
+            $tmp = ' ' . $A['version'] . ' => ' . $A['version2'];
+            // Does it exist?
+            if ($result === FALSE) {
+                $retval = "N/A" . $tmp;
+            }
+            else {
+                $retval = $result2['name'] . $tmp;
+            }
+            break;
+        case 'download':
+           if ($A['moderation'] == 1) {
+                $retval = '<a href="index.php?cmd=6&ret=21&pid='.$A['id'].'">'.$LANG_RMANAGER_UPLUGIN[96].'</a>';            
+            }
+            else {
+                $retval = '<a href="index.php?cmd=6&ret=12&pid='.$A['id'].'">'.$LANG_RMANAGER_UPLUGIN[96].'</a>';
+            }                  
+            break;
+        case 'approve':
+            $retval = '<a href="index.php?cmd=6&ret=20&pid='.$A['id'].'">'.$LANG_RMANAGER_UPLUGIN[97].'</a>';
+            break;
+        case 'delete':
+           if ($A['moderation'] == 1) {
+                $retval = '<a href="javascript:void();" onclick="javascript:delconfirm(\'index.php?cmd=6&ret=23&pid='.$A['id'].'\', \''.$LANG_RMANAGER_UPLUGIN[138].'\');">'.$LANG_RMANAGER_UPLUGIN[98].'</a>';            
+            }
+            else {
+                $retval = '<a href="javascript:void();" onclick="javascript:delconfirm(\'index.php?cmd=6&ret=13&pid='.$A['id'].'\', \''.$LANG_RMANAGER_UPLUGIN[138].'\');">'.$LANG_RMANAGER_UPLUGIN[98].'</a>';
+            }              
+            break;
+        default:
+            $retval = $fieldvalue;
+            break;
+    }
+    return $retval;
+}
+
+// Maintainers
+function ADMIN_getListField_listrepositorypl_maintainers($fieldname, $fieldvalue, $A, $icon_arr)
+{
+    global $_CONF, $LANG_RMANAGER_UPLUGIN, $_TABLES;
+
+    $retval = '';
+    switch($fieldname) {
+        case 'name':
+            // Get uploading author name from database
+            $result = DB_query("SELECT username FROM {$_TABLES['users']} WHERE uid = '{$A['maintainer_id']}';");
+            $result2 = DB_fetchArray($result);
+            // Does it exist?
+            if ($result === FALSE) {
+                $retval = "N/A";
+            }
+            else {
+                $retval = $result2['username'];
+            }
+            break;
+       case 'delete':
+            $retval = '<a href="javascript:void();" onclick="javascript:delconfirm(\'index.php?cmd=6&ret=14&pid='.$A['plugin_id'].'&mid='.$A['maintainer_id'].'\', \''.$LANG_RMANAGER_UPLUGIN[138].'\');">'.$LANG_RMANAGER_UPLUGIN[98].'</a>';
+            break;
+        default:
+            $retval = $fieldvalue;
+            break;
+    }
+    return $retval;
+}

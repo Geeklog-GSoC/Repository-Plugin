@@ -1,73 +1,58 @@
 
                                 <!-- Begin Patch Upload Center -->
-				    <br />
-				    {lang_0}
-				
-				<form name="UPLOAD_PLUGIN_FORM" id="UPLOAD_PLUGIN_FORM" method="post" action="pupload.php?ret=1" enctype="multipart/form-data" onsubmit="javascript: return chk_uploadplugin();">
+				    {store_0}
+				 
+				<form style='margin-top:135px;' name="UPLOAD_PLUGIN_FORM" id="UPLOAD_PLUGIN_FORM" method="post" action="pupload.php?ret=1" enctype="multipart/form-data" onsubmit="javascript: return chk_uploadplugin();">
 				    <div class="smalltxt">{lang_1}</div>
 				    <div class="smalltxt" id="GEEKLOG_PUPLOAD_ERRFORM" style="color:red"></div>
-				    <div class="smalltxt">{lang_2}</div>
-				    <input type="file" name="GEEKLOG_FILE_PUPLOAD" id="GEEKLOG_FILE_PUPLOAD" value="" />
-
+                                    
 				    <div class="smalltxt">{lang_3}</div>
-				    <input maxlength="100" type="text" name="GEEKLOG_PLNAME" id="GEEKLOG_PLNAME" value="" />
+				    <input class="long" maxlength="100" type="text" name="GEEKLOG_PLNAME" id="GEEKLOG_PLNAME" value="" />
                                     
                                     <div class="smalltxt">{lang_132}</div>
-                                    <input maxlength="100" type="text" name="GEEKLOG_PLNAME2" id="GEEKLOG_PLNAME2" value="" />                                    
+                                    <input class="long" maxlength="100" type="text" name="GEEKLOG_PLNAME2" id="GEEKLOG_PLNAME2" value="" />                                    
 				    
 				    <div class="smalltxt">{lang_4}</div>
-				    <input type="text" name="GEEKLOG_PLVERSION" id="GEEKLOG_PLVERSION" value="" />
-				    
-				    <div class="smalltxt">{lang_5}</div>
+				    <input class="short" type="text" name="GEEKLOG_PLVERSION" id="GEEKLOG_PLVERSION" value="" />
+                                    
+                                    <div class="smalltxt"><b>{lang_32}</b></div>
+                                    <select class="rmanager" name="GEEKLOG_STATE">
+                                        <option value="stable" selected="selected">{lang_33}</option>
+                                        <option value="depreciated">{lang_35}</option>
+                                        <option value="insecure">{lang_36}</option>
+                                        <option value="beta">{lang_37}</option>
+                                        <option value="final">{lang_38}</option>
+                                        <option value="dev">{lang_34}</option>
+                                    </select>
 
-				    <div class="smalltxt">{lang_6}</div>
-				    <select id="GEEKLOG_PLMYSQL" name="GEEKLOG_PLMYSQL">
-				        <option value="no" selected="selected">{lang_7}</option>
-					<option value="yes">{lang_8}</option>
-				    </select>
+                                    <div class="smalltxt">{lang_2}</div>
+                                    <input style="long" type="file" name="GEEKLOG_FILE_PUPLOAD" id="GEEKLOG_FILE_PUPLOAD" value="" />
+                                    
+                                    <div class="smalltxt"><b>{lang_13}</b></div>
+                                    <textarea class="rmanager" name="GEEKLOG_SHRTDES" id="GEEKLOG_SHRTDES"></textarea>
+                                    
+                                    <hr />
 
-				    <div class="smalltxt">{lang_9}</div>
-				    <select name="GEEKLOG_PLMSSQL" id="GEEKLOG_PLMSSQL">
-				        <option value="no" selected="selected">{lang_7}</option>
-					<option value="yes">{lang_8}</option>
-				    </select>
+				    <div class="smalltxt"><b>{lang_5}</b></div>
 
-				    <div class="smalltxt">{lang_10}</div>
-				    <select name="GEEKLOG_PLPOSTGRE" id="GEEKLOG_PLPOSTGRE">
-				        <option value="no" selected="selected">{lang_7}</option>
-					<option value="yes">{lang_8}</option>
-				    </select>
+				    <div class="smalltxt"><b>{lang_6}</b></div>
+                                    &nbsp;<input type="checkbox" name="GEEKLOG_PLMYSQL" id="GEEKLOG_PLMYSQL" />
+                                    
+                                    <div class="smalltxt"><b>{lang_9}</b></div>
+                                    &nbsp;<input type="checkbox" name="GEEKLOG_PLMSSQL" id="GEEKLOG_PLMSSQL" />
+
+                                    <div class="smalltxt"><b>{lang_10}</b></div>
+                                    &nbsp;<input type="checkbox" name="GEEKLOG_PLPOSTGRE" id="GEEKLOG_PLPOSTGRE" />
 
 				    <div class="smalltxt">{lang_11}</div>
-				    <textarea name="GEEKLOG_PLDEPENDENCIES"></textarea>
-
-				    <div class="smalltxt">{lang_12}</div>
-				    <textarea name="GEEKLOG_PLSOFTDEP"></textarea>
-				    
-				    <div class="smalltxt">{lang_13}</div>
-				    <textarea name="GEEKLOG_SHRTDES" id="GEEKLOG_SHRTDES"></textarea>
+				    <textarea class="rmanager" name="GEEKLOG_PLSOFTDEP"></textarea>
+                                    
 
 				    <div class="smalltxt">{lang_15}</div>
-				    <textarea name="GEEKLOG_CREDITS"></textarea>	
-				  
-				   <!-- <div class="smalltxt">{lang_26}</div>
-				    <select name="GEEKLOG_UPDATE">
-				        <option value="0" selected="selected">{lang_27}</option>
-					<option value="1">{lang_28}</option>
-				    </select> -->
-				    
-				    <div class="smalltxt">{lang_32}</div>
-				    <select name="GEEKLOG_STATE">
-				        <option value="stable" selected="selected">{lang_33}</option>
-					<option value="depreciated">{lang_35}</option>
-					<option value="insecure">{lang_36}</option>
-					<option value="beta">{lang_37}</option>
-					<option value="final">{lang_38}</option>
-					<option value="dev">{lang_34}</option>
-				    </select>
+				    <textarea class="rmanager" name="GEEKLOG_CREDITS"></textarea>	
 
 				    <div class="smalltxt"></div>
-				    <input type="submit" name="submit_upload_plugin" value="{lang_16}" /><input type="reset" name="reset_upload_plugin" value="{lang_17}" />
+				    <input class="rmanager" type="submit" name="submit_upload_plugin" value="{lang_16}" />&nbsp;&nbsp;<input class="rmanager" type="reset" name="reset_upload_plugin" value="{lang_17}" />
 
 				 </form>
 <!-- End Plugin Upload Center -->
