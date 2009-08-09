@@ -72,6 +72,12 @@ closedir($dirhandle);
 
 // Sort array
 sort($results);
+
+// If there are no repositories, display message
+if (count($results) <= 0) {
+    $results = $LANG_RMANAGER_DPLUGIN[4];
+}
+
 $display = '';
 $display .= COM_siteHeader('');
 $display .= tdisplay_formattedmessage($results, $LANG_RMANAGER_DPLUGIN[1], TRUE, FALSE);

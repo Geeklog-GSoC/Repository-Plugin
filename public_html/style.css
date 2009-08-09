@@ -16,21 +16,21 @@ input, textarea
 input.long
 {
     width:250px;
-    background:#eee;
-    border:1px solid #eee;
+    /*background:#eee;
+    border:1px solid #eee; */
 }
 
 input.short
 {
     width:100px;
-    background:#eee;
-    border:1px solid #eee;
+    /*background:#eee;
+    border:1px solid #eee; */
 }
 
 select.rmanager, textarea.rmanager, input.rmanager
 {
-    background:#eee;
-    border:1px solid #eee;
+    /*background:#eee;
+    border:1px solid #eee; */
 }
 
 

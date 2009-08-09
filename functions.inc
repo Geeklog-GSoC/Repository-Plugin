@@ -127,7 +127,7 @@ function plugin_getadminoption_repository()
  
     return array ($LANG_RMANAGER_UPLUGIN[137],
                   $_CONF['site_admin_url'] . '/plugins/repository/index.php',
-                  0);
+                  plugin_submissioncount_repository());
 }
 
 /**
@@ -209,7 +209,7 @@ DLINKS;
     }
     else {
         // Preliminary Check - is msg an array?
-        if (count($msg) <= 0) {
+        if (!is_array($msg)) {
             $array = array($msg);
         }
         else {
@@ -421,3 +421,44 @@ function ADMIN_getListField_listrepositorypl_maintainers($fieldname, $fieldvalue
     }
     return $retval;
 }
+
+
+/**
+*
+* Counts the items that are submitted
+*
+*/
+function plugin_submissioncount_repository()
+{
+    global $_TABLES;
+
+    $num = 0;
+
+    // Get plugin count
+    $result = DB_query("SELECT COUNT(id) FROM {$_TABLES['repository_listing']} WHERE moderation = 1;");
+    $result2 = DB_fetchArray($result);
+    if ($result2 !== FALSE)
+    {
+        $num += $result2['COUNT(id)'];
+    }
+    
+    // Get patch count
+    $result = DB_query("SELECT COUNT(id) FROM {$_TABLES['repository_patches']} WHERE moderation = 1;");
+    $result2 = DB_fetchArray($result);
+    if ($result2 !== FALSE)
+    {
+        $num += $result2['COUNT(id)'];
+    }
+    
+    // Get upgrade count
+    $result = DB_query("SELECT COUNT(id) FROM {$_TABLES['repository_upgrade']} WHERE moderation = 1;");
+    $result2 = DB_fetchArray($result);
+    if ($result2 !== FALSE)
+    {
+        $num += $result2['COUNT(id)'];
+    }
+
+    return $num;
+}
+
+

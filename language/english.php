@@ -200,7 +200,8 @@ $LANG_RMANAGER = array(
      0 => "List of all plugins associated with you<br />(Author and/or Maintainer)",
      1 => "Listing of all plugins in this repository",
      2 => "Listing of all patches in this repository",
-     3 => "Listing of all upgrades in this repository"
+     3 => "Listing of all upgrades in this repository",
+     4 => "There are currently no items in this repository"
 
 
  );
