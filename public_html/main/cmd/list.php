@@ -36,7 +36,7 @@ header("Pragma: no-cache");
 require_once '../../../lib-common.php';
 
 // Output preliminary XML
-echo <<<XML
+echo '
 <?xml version="1.0"?>
 
 <repository
@@ -44,7 +44,7 @@ xmlns="http://www.geeklog.com"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.geeklog.com ../../xml/repository_listing.xsd">
 <!-- Start Plugin List -->
-XML;
+';
 
 // Create query, lets go
 $tblname = $_TABLES['repository_listing'];
@@ -54,7 +54,7 @@ $result = DB_query($qstr);
 
 // Loop until we reach a 0, outputting the XML every time
 while ( ($result2 = DB_fetchArray($result)) !== FALSE) {
-echo <<<EEPROM
+echo "
 <plugin>
 <id>{$result2['id']}</id>
 <name><![CDATA[{$result2['name']}]]></name>
@@ -71,11 +71,8 @@ echo <<<EEPROM
 <state><![CDATA[{$result2['state']}]]></state>
 <ext><![CDATA[{$result2['ext']}]]></ext>
 </plugin>
-EEPROM;
+";
 }
 
-echo <<<OMM
-<!-- End Plugin List -->
-</repository>
-OMM;
+echo "<!-- End Plugin List --></repository>";
 ?>

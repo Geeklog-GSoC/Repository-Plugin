@@ -132,15 +132,12 @@ if (isset($_GET['cmd'])) {
 	$arrpatch =  unserialize(stripslashes($list_of_idv));
 
 	$tblname = $_TABLES['repository_patches'];
-echo <<<COOSHY
-<?xml version="1.0"?>
-
-<repository
+echo '<?xml version="1.0"?><repository
 xmlns="http://www.geeklog.com"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.geeklog.com ../../xml/patch_listing.xsd">
-<!-- Start patch List -->
-COOSHY;
+<!-- Start patch List -->';
+
 	// Loop over each ID
 	foreach ($arrpatch as $id => $other_array) {
 	    $id2 = (int)$id;
@@ -150,7 +147,7 @@ COOSHY;
             while ( ($result2 = DB_fetchArray($result)) !== FALSE) {
                  // If it applies to all versions, no need to check
                  if ( ($result2['applies_num'] == 'al')  and ($other_array[1] < $result2['update_number'])) { 
-echo <<<YUMMY
+echo "
 <patch>
         <id>{$result2['id']}</id>
         <name><![CDATA[{$result2['name']}]]></name>
@@ -163,7 +160,7 @@ echo <<<YUMMY
         <description><![CDATA[{$result2['description']}]]></description>
         <update_number><![CDATA[{$result2['update_number']}]]></update_number>
 </patch>
-YUMMY;
+";
                      continue;
                  }
                  
@@ -171,7 +168,7 @@ YUMMY;
                  $vseg = version_compare($result2['version'], $other_array[0], $result2['applies_num']);
                  
                  if ( ($vseg === TRUE) and ($other_array[1] < $result2['update_number'])) {
-echo <<<YUMMY
+echo "
 <patch>
         <id>{$result2['id']}</id>
         <name><![CDATA[{$result2['name']}]]></name>
@@ -184,7 +181,7 @@ echo <<<YUMMY
         <description><![CDATA[{$result2['description']}]]></description>
         <update_number><![CDATA[{$result2['update_number']}]]></update_number>
 </patch>
-YUMMY;
+";
                  }
             }       
 	}
@@ -212,28 +209,14 @@ YUMMY;
                         continue;
                     }
                  
-                    echo <<<UPGRADE
-<upgrade>
-        <upgrade_version><![CDATA[{$result2['version']}]]></upgrade_version>
-        <upgrade_name><![CDATA[{$result5['name']}]]></upgrade_name>
-        <upgrade_version2><![CDATA[{$result2['version2']}]]></upgrade_version2>
-        <upgrade_pluginid><![CDATA[{$id2}]]></upgrade_pluginid>
-        <upgrade_id><![CDATA[{$result2['id']}]]></upgrade_id>
-        <upgrade_autoinstall>{$result2['automatic_install']}</upgrade_autoinstall>
-        <upgrade_ext><![CDATA[{$result2['ext']}]]></upgrade_ext>
-        <upgrade_des><![CDATA[{$result2['description']}]]></upgrade_des>
-</upgrade>                    
-UPGRADE;
+                    echo "<upgrade><upgrade_version><![CDATA[{$result2['version']}]]></upgrade_version><upgrade_name><![CDATA[{$result5['name']}]]></upgrade_name><upgrade_version2><![CDATA[{$result2['version2']}]]></upgrade_version2><upgrade_pluginid><![CDATA[{$id2}]]></upgrade_pluginid><upgrade_id><![CDATA[{$result2['id']}]]></upgrade_id><upgrade_autoinstall>{$result2['automatic_install']}</upgrade_autoinstall><upgrade_ext><![CDATA[{$result2['ext']}]]></upgrade_ext><upgrade_des><![CDATA[{$result2['description']}]]></upgrade_des></upgrade>";
                 }
             }       
              
 
         }
         
-echo <<<ENDPART
-<!-- End patch List -->
-</repository>
-ENDPART;
+echo "<!-- End patch List --></repository>";
     }
 }
 else

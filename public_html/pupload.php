@@ -652,10 +652,8 @@ else if (isset($_GET['ret'])) {
 	   // Send query to the database
            $tblname = $_TABLES['repository_listing'];
 	   // This type of string format needs to be against the 'wall' and not indented for it to work -- 
-$qstr = <<<HETERO
-INSERT INTO {$tblname}(ext, name, version, db, dependencies, soft_dep, short_des, credits, uploading_author, install, state, moderation, fname) 
-VALUES('{$full_ext}', '{$name}','{$version}','{$database_bit_value}','{$dependencies}','{$sys_dependencies}','{$shrt_des}','{$credits}','{$_USER['uid']}','{$automatic_installer}','{$state}', '{$_RM_CONF['repository_moderated']}', '{$fname}');
-HETERO;
+$qstr = "INSERT INTO {$tblname}(ext, name, version, db, dependencies, soft_dep, short_des, credits, uploading_author, install, state, moderation, fname) 
+VALUES('{$full_ext}', '{$name}','{$version}','{$database_bit_value}','{$dependencies}','{$sys_dependencies}','{$shrt_des}','{$credits}','{$_USER['uid']}','{$automatic_installer}','{$state}', '{$_RM_CONF['repository_moderated']}', '{$fname}');";
 
            $result = DB_query($qstr);
 	       
@@ -906,9 +904,7 @@ HETERO;
             }
            	  
 	    // This type of string format needs to be against the 'wall' and not indented for it to work -- 
-$qstr = <<<HETERO
-UPDATE {$tblname} SET ext = '{$full_ext}', name = '{$name}', version = '{$version}', db = '{$database_bit_value}', dependencies = '{$dependencies}', soft_dep = '{$sys_dependencies}', short_des = '{$shrt_des}', credits = '{$credits}', install = '{$automatic_installer}', state = '{$state}', fname = '{$fname}', moderation = '{$_RM_CONF['repository_moderated']}' WHERE id = '{$id}';
-HETERO;
+$qstr = "UPDATE {$tblname} SET ext = '{$full_ext}', name = '{$name}', version = '{$version}', db = '{$database_bit_value}', dependencies = '{$dependencies}', soft_dep = '{$sys_dependencies}', short_des = '{$shrt_des}', credits = '{$credits}', install = '{$automatic_installer}', state = '{$state}', fname = '{$fname}', moderation = '{$_RM_CONF['repository_moderated']}' WHERE id = '{$id}';";
 
             // Run Query
             $result = DB_query($qstr);
@@ -1171,10 +1167,8 @@ HETERO;
            
 	   // Send query to the database
 	   // This type of string format needs to be against the 'wall' and not indented for it to work -- 
-$qstr = <<<HETERO
-INSERT INTO {$tblname}(name, plugin_id, uploading_author, applies_num, version, ext, severity, automatic_install, moderation, description, update_number) 
-VALUES('{$name}','{$id}','{$_USER['uid']}','{$vtype}','{$version}','{$full_ext}','{$severity}','{$automatic_installer}', '{$_RM_CONF['repository_moderated']}', '{$des}', '{$update_number}');
-HETERO;
+$qstr = "INSERT INTO {$tblname}(name, plugin_id, uploading_author, applies_num, version, ext, severity, automatic_install, moderation, description, update_number) 
+VALUES('{$name}','{$id}','{$_USER['uid']}','{$vtype}','{$version}','{$full_ext}','{$severity}','{$automatic_installer}', '{$_RM_CONF['repository_moderated']}', '{$des}', '{$update_number}');";
 
            $result = DB_query($qstr);
 	       
@@ -1411,10 +1405,8 @@ HETERO;
 
            // Send query to the database
            // This type of string format needs to be against the 'wall' and not indented for it to work -- 
-$qstr = <<<HETERO
-INSERT INTO {$tblname}(plugin_id, version, version2, description, ext, moderation, automatic_install) 
-VALUES('{$id}', '{$version}','{$version2}','{$des}','{$full_ext}', '{$_RM_CONF['repository_moderated']}', '{$automatic_installer}');
-HETERO;
+$qstr = "INSERT INTO {$tblname}(plugin_id, version, version2, description, ext, moderation, automatic_install) 
+VALUES('{$id}', '{$version}','{$version2}','{$des}','{$full_ext}', '{$_RM_CONF['repository_moderated']}', '{$automatic_installer}');";
 
            $result = DB_query($qstr);
                
