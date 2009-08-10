@@ -40,7 +40,7 @@ function plugin_autouninstall_repository ()
         'groups' => array('Repository Manager Admin'),
 
         /* give the full name of the feature, as in the db */
-        'features' => array('rmanager.manage'),
+        'features' => array('repository.manage'),
 
         /* give the full name of the block, including 'phpblock_', etc */
         'php_blocks' => array(''),

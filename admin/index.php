@@ -36,8 +36,17 @@ require_once '../../../lib-common.php';
 require_once '../../auth.inc.php';
 require_once $_CONF['path_system'] . 'lib-admin.php';
 
-if (!SEC_isModerator()) {
-    header("Location: ../../index.php");
+// Ensure user even has the rights to access this page
+if (!SEC_hasRights('repository.manage')) {
+    $display .= COM_siteHeader('menu', $MESSAGE[30])
+             . COM_showMessageText($MESSAGE[29], $MESSAGE[30])
+             . COM_siteFooter();
+
+    // Log attempt to access.log
+    COM_accessLog("User {$_USER['username']} tried to illegally access the event administration screen.");
+
+    COM_output($display);
+
     exit;
 }
 

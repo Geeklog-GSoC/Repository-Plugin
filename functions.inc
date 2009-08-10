@@ -112,7 +112,11 @@ function plugin_getmenuitems_repository ()
 function plugin_getuseroption_repository()
 {
     global $_CONF, $LANG_RMANAGER_UPLUGIN;
-
+    
+    if (!SEC_hasRights ('repository.upload')) {
+        return FALSE;
+    }
+    
     $url = $_CONF['site_url'] . '/repository/index.php';
     return array ($LANG_RMANAGER_UPLUGIN[137], $url, '');
 }
@@ -124,6 +128,10 @@ function plugin_getuseroption_repository()
 function plugin_getadminoption_repository()
 {
     global $_CONF, $_TABLES, $LANG_RMANAGER_UPLUGIN;
+    
+    if (!SEC_hasRights ('repository.manage')) {
+        return FALSE;
+    }
  
     return array ($LANG_RMANAGER_UPLUGIN[137],
                   $_CONF['site_admin_url'] . '/plugins/repository/index.php',
@@ -138,7 +146,11 @@ function plugin_getadminoption_repository()
 function plugin_cclabel_repository()
 {
     global $_CONF, $LANG_RMANAGER_UPLUGIN;
-
+    
+    if (!SEC_hasRights ('repository.manage')) {
+        return FALSE;
+    }
+    
     return array ($LANG_RMANAGER_UPLUGIN[137],
             $_CONF['site_admin_url'] . '/plugins/repository/index.php',
             plugin_geticon_repository ());

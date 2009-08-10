@@ -34,6 +34,7 @@ function plugin_autoinstall_repository($pi_name)
     $pi_name = 'repository';
     $pi_display_name = 'Repository Manager';
     $pi_admin = $pi_display_name.' Admin';
+    $pi_user = $pi_display_name.' User';
 
     $info = array(
         'pi_name'         => $pi_name,
@@ -44,17 +45,18 @@ function plugin_autoinstall_repository($pi_name)
     );
     
     $groups = array(
-        $pi_admin => 'Has full access to ' . $pi_display_name . ' features'
+        $pi_admin => 'Has full access to ' . $pi_display_name . ' features',
+        $pi_user => 'Is able to upload plugins to the repository'
     );
 
     $features = array(
         $pi_name . '.manage'  => 'Ability to manage the repository',
-
+        $pi_name . '.upload' => 'Ability to upload plugins'
     );
     
     $mappings = array(
         $pi_name . '.manage'  => array($pi_admin),
-
+        $pi_name . '.upload' => array($pi_admin, $pi_user);
     );
 
     $tables = array(

@@ -108,6 +108,16 @@ if (COM_isAnonUser()) {
     COM_output($display);
     exit;
 }
+// Ensure user even has the rights to access this page
+else if (!SEC_hasRights('repository.upload')) {
+    $display .= COM_siteHeader('menu', $MESSAGE[30])
+             . COM_showMessageText($MESSAGE[29], $MESSAGE[30])
+             . COM_siteFooter();
+
+   COM_output($display);
+
+    exit;
+}
 
 $display .= COM_siteHeader('');
 //$display .= COM_startBlock($LANG_RMANAGER['title'], '', COM_getBlockTemplate('_msg_block', 'header')); 
