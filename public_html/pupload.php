@@ -121,10 +121,10 @@ else if (!SEC_hasRights('repository.upload')) {
 
 $display .= COM_siteHeader('');
 //$display .= COM_startBlock($LANG_RMANAGER['title'], '', COM_getBlockTemplate('_msg_block', 'header')); 
-if ($_GET['msg']) {
+if (isset($_GET['msg'])) {
     $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[(int)$_GET['msg']]);
 }
-else if ($_GET['tmsg']) {
+else if (isset($_GET['tmsg'])) {
     $display .= ShowTMessageRManager((int)$_GET['tmsg']);
 }
 
