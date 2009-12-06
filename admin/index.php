@@ -102,10 +102,10 @@ function ShowTMessageRManager($msg)
     return $retval;
 }
 
-if ($_GET['msg']) {
+if (isset($_GET['msg'])) {
     $display .= COM_showMessageText($LANG_RMANAGER_UPLUGIN[(int)$_GET['msg']]);
 }
-else if ($_GET['tmsg']) {
+else if (isset($_GET['tmsg'])) {
     $display .= ShowTMessageRManager((int)$_GET['tmsg']);
 }
 
@@ -182,6 +182,8 @@ if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 1)) {
         'query_fields' => array('name'),
         'default_filter' => ''
     );
+
+    $token = ''; // FIXME: for now ...
 
     // this is a dummy variable so we know the form has been used if all plugins
     // should be disabled in order to disable the last one.
@@ -266,7 +268,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 22)) {
         array('text' => $LANG_RMANAGER_UPLUGIN[98], 'field' => 'delete', 'sort' => false)
     );
 
-    $defsort_arr = array();
+    $defsort_arr = array('field' => 'id', 'direction' => 'asc');
 
     $menu_arr = $SECOND_LINK_ARRAY;
 
@@ -299,6 +301,8 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 22)) {
         'query_fields' => array('name'),
         'default_filter' => ''
     );
+
+    $token = ''; // FIXME: for now ...
 
     // this is a dummy variable so we know the form has been used if all plugins
     // should be disabled in order to disable the last one.
@@ -353,6 +357,8 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 3)) {
         'query_fields' => array('name'),
         'default_filter' => ''
     );
+
+    $token = ''; // FIXME: for now ...
 
     // this is a dummy variable so we know the form has been used if all plugins
     // should be disabled in order to disable the last one.
@@ -414,6 +420,8 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 4)) {
         'default_filter' => ''
     );
 
+    $token = ''; // FIXME: for now ...
+
     // this is a dummy variable so we know the form has been used if all plugins
     // should be disabled in order to disable the last one.
     $form_arr = array('bottom' => '<input type="hidden" name="pluginenabler" value="true"' . XHTML . '>');
@@ -438,7 +446,7 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 11)) {
         array('text' => $LANG_RMANAGER_UPLUGIN[98], 'field' => 'delete', 'sort' => false)
     );
 
-    $defsort_arr = array();
+    $defsort_arr = array('field' => 'id', 'direction' => 'asc');
 
     $menu_arr = $SECOND_LINK_ARRAY;
 
@@ -471,6 +479,8 @@ else if ( (isset($_GET['cmd'])) and ($_GET['cmd'] == 11)) {
         'query_fields' => array('name'),
         'default_filter' => ''
     );
+
+    $token = ''; // FIXME: for now ...
 
     // this is a dummy variable so we know the form has been used if all plugins
     // should be disabled in order to disable the last one.
