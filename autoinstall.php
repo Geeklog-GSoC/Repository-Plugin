@@ -56,7 +56,7 @@ function plugin_autoinstall_repository($pi_name)
     
     $mappings = array(
         $pi_name . '.manage'  => array($pi_admin),
-        $pi_name . '.upload' => array($pi_admin, $pi_user);
+        $pi_name . '.upload' => array($pi_admin, $pi_user)
     );
 
     $tables = array(
