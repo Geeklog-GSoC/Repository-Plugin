@@ -85,6 +85,7 @@ function ShowTMessageRManager($msg)
 
 
 $display = '';
+$update = '0'; // FIXME: otherwise undefined variable ...
 
 // Is anonymous user, which means they have not logged in, which means they cannot access the page, which means that they get brought to a login page, 
 // which means they are told to login or register, which means Tim is happy
