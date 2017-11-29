@@ -214,6 +214,25 @@ $LANG_RMANAGER = array(
      3 => ' patch(es) waiting for approval! (Click to load)'
  );
  
+// Localization of the Admin Configuration UI
+$LANG_configsections['repository'] = array(
+    'label' => 'Repository Manager',
+    'title' => 'Repository Manager Configuration'
+); 
+
+$LANG_fs['repository'] = array(
+    'fs_main' => 'Repository Settings'
+);
+
+$LANG_configsubgroups['repository'] = array(
+    'sg_main' => 'Main Settings'
+);
+ 
+$LANG_confignames['repository'] = array(
+   'repository_moderated' => 'Repository Moderated',
+   'max_pluginpatch_upload' => 'Max plugin upload size'
+);
+ 
 $LANG_configselects['repository'] = array(
     0 => array('True' => 1, 'False' => 0),
     1 => array('True' => TRUE, 'False' => FALSE),

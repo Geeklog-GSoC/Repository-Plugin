@@ -36,11 +36,9 @@ header("Pragma: no-cache");
 require_once '../../../lib-common.php';
 
 // Output preliminary XML
-echo '
-<?xml version="1.0"?>
-
+echo '<?xml version="1.0"?>
 <repository
-xmlns="http://www.geeklog.com"
+xmlns="https://www.geeklog.com"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.geeklog.com ../../xml/repository_listing.xsd">
 <!-- Start Plugin List -->

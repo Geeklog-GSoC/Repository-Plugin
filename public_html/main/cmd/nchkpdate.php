@@ -135,7 +135,7 @@ if (isset($_GET['cmd'])) {
 echo '<?xml version="1.0"?><repository
 xmlns="http://www.geeklog.com"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.geeklog.com ../../xml/patch_listing.xsd">
+xsi:schemaLocation="https://www.geeklog.com ../../xml/patch_listing.xsd">
 <!-- Start patch List -->';
 
 	// Loop over each ID

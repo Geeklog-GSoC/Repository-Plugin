@@ -473,4 +473,25 @@ function plugin_submissioncount_repository()
     return $num;
 }
 
+function plugin_autouninstall_repository ()
+{
+    $out = array (
+        /* give the name of the tables, without $_TABLES[] */
+        'tables' => array('repository_listing', 'repository_maintainers', 'repository_upgrade', 'repository_patches'),
+
+        /* give the full name of the group, as in the db */
+        'groups' => array('Repository Manager Admin'),
+
+        /* give the full name of the feature, as in the db */
+        'features' => array('repository.manage'),
+
+        /* give the full name of the block, including 'phpblock_', etc */
+        'php_blocks' => array(''),
+
+        /* give all vars with their name */
+        'vars'=> array()
+    );
+
+    return $out;
+}
 

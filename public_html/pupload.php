@@ -580,7 +580,8 @@ else if (isset($_GET['ret'])) {
            // As you can see, the mask goes up by power of 2, so 2^0, 2^1, 2^2, 2^3, etc
            // In the case that functions.inc is missing, the end integer (last 4 bits) would be 1011 or 11. All present is F or 15
            // Array is format: Mask #=>file name
-           $required_fnames = array(1=> "autoinstall.php", 2=> "autouninstall.php", 4 => "functions.inc");
+           //$required_fnames = array(1=> "autoinstall.php", 2=> "autouninstall.php", 4 => "functions.inc");
+           $required_fnames = array(1=> "autoinstall.php", 4 => "functions.inc");
            $bitwise_integer_value = 0;           
 
            // Time to loop through the array, getting the file name's basename, and then uploading it
